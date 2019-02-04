@@ -16,7 +16,7 @@ static char _multiple_wildcard_rgxp[] = "^/<>\\*$";
 static char _subpattern_match_rgxp[] = "^/(.+)$";
 static char _function_ref_rgxp[] = "^/\\[.+\\]$";
 static char _rule_ref_rgxp[] = "^.+(.+)$";
-static char _rule_ref_args_rgxp[] = ".+(\\\\d*,?.*)$";
+static char _rule_ref_args_rgxp[] = "(\\\\d*,?.*)$";
 static int  TINY_REGEX_C_FAIL = -1;
 
 /**
@@ -108,33 +108,29 @@ _probe_trust_schema_rule_component_type(const char* string, uint32_t size)
   int ret_val = -1;
 
   if (string[0] == '/') {
-    if ((ret_val = re_match(_multiple_wildcard_rgxp, string)) != TINY_REGEX_C_FAIL) {
+    if (re_match(_multiple_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
       /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _multiple_wildcard_rgxp); */
       return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE;
     }
-    
-    if ((ret_val = re_match(_single_wildcard_rgxp, string)) != TINY_REGEX_C_FAIL) {
+    else if (re_match(_single_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
       /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _single_wildcard_rgxp); */
       return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT;
     }
-    
-    if ((ret_val = re_match(_single_name_rgxp, string)) != TINY_REGEX_C_FAIL) {
+    else if (re_match(_single_name_rgxp, string) != TINY_REGEX_C_FAIL) {
       /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _single_name_rgxp); */
       return NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT;
     }
-    
-    if ((ret_val = re_match(_subpattern_match_rgxp, string)) != TINY_REGEX_C_FAIL) {
+    else if (re_match(_subpattern_match_rgxp, string) != TINY_REGEX_C_FAIL) {
       /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _subpattern_match_rgxp); */
       return NDN_TRUST_SCHEMA_SUBPATTERN_MATCH;
     }
-    
-    if ((ret_val = re_match(_function_ref_rgxp, string)) != TINY_REGEX_C_FAIL) {
+    else if (re_match(_function_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
       /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _function_ref_rgxp); */
       return NDN_TRUST_SCHEMA_FUNCTION_REF;
     }
   }
   else {
-    if ((ret_val = re_match(_rule_ref_rgxp, string)) != TINY_REGEX_C_FAIL) {
+    if (re_match(_rule_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
       /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _rule_ref_rgxp); */
       return NDN_TRUST_SCHEMA_RULE_REF;
     }
@@ -187,15 +183,18 @@ ndn_trust_schema_rule_component_from_string(ndn_trust_schema_rule_component_t* c
     break;
   case NDN_TRUST_SCHEMA_RULE_REF:
     printf("%sgot a rule reference.\n", function_msg_prefix);
-    if ((ret_val = re_match(_rule_ref_args_rgxp, string)) == TINY_REGEX_C_FAIL) {
+    ret_val = re_match(_rule_ref_args_rgxp, string);
+    if (ret_val == TINY_REGEX_C_FAIL) {
       return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
     }
     printf("%sstarting index of rule reference's arguments: %d\n", function_msg_prefix, ret_val);
-    printf("%srule reference's arguments: %s\n", function_msg_prefix, string + ret_val);
+    printf("%srule reference's arguments: %.*s\n", function_msg_prefix, size - 3 - ret_val, string + ret_val + 1);
     break;
   default:
     return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
   }
+
+  printf ("\n");
   
 }
 
