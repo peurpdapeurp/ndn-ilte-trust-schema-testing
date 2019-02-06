@@ -10,11 +10,11 @@
 #include <string.h>
 #include <stdio.h>
 
-static char _single_name_rgxp[] = "^/<.+>$";
-static char _single_wildcard_rgxp[] = "^/<>$";
-static char _multiple_wildcard_rgxp[] = "^/<>\\*$";
-static char _subpattern_match_rgxp[] = "^/(.+)$";
-static char _function_ref_rgxp[] = "^/\\[.+\\]$";
+static char _single_name_rgxp[] = "^<.+>$";
+static char _single_wildcard_rgxp[] = "^<>$";
+static char _multiple_wildcard_rgxp[] = "^<>\\*$";
+static char _subpattern_match_rgxp[] = "^(.+)$";
+static char _function_ref_rgxp[] = "^\\[.+\\]$";
 static char _rule_ref_rgxp[] = "^.+(.+)$";
 static char _rule_ref_args_rgxp[] = "(\\\\d*,?.*)$";
 static int  TINY_REGEX_C_FAIL = -1;
@@ -63,9 +63,14 @@ typedef struct ndn_trust_schema_rule {
 static inline int
 ndn_trust_schema_rule_append_component(ndn_trust_schema_rule_t *rule, const ndn_trust_schema_rule_component_t* component)
 {
+  printf("In ndn_trust_schema_rule_append_component, value of rule->components_size + 1: %d\n", rule->components_size + 1);
+  
   if (rule->components_size + 1 <= NDN_NAME_COMPONENTS_SIZE) {
     memcpy(rule->components + rule->components_size, component, sizeof(ndn_trust_schema_rule_component_t));
     rule->components_size++;
+
+    printf("In ndn_trust_schema_rule_append_component, increased components_size from %d to %d.\n", rule->components_size - 1, rule->components_size);
+    
     return 0;
   }
   else
@@ -100,50 +105,46 @@ ndn_trust_schema_rule_component_from_buffer(ndn_trust_schema_rule_component_t* c
  * @return Returns the trust schema rule component type if there is no error and 
  *         the probing found a valid NDN trust schema rule component type.
  */
-static inline int
+static inline uint32_t
 _probe_trust_schema_rule_component_type(const char* string, uint32_t size)
 {  
-  /* printf("In _probe_trust_schema_rule_component_type, string passed in: %s\n", string); */
+  printf("In _probe_trust_schema_rule_component_type, string passed in: %s\n", string);
 
   int ret_val = -1;
 
-  if (string[0] == '/') {
-    if (re_match(_multiple_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
-      /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _multiple_wildcard_rgxp); */
-      return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE;
-    }
-    else if (re_match(_single_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
-      /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _single_wildcard_rgxp); */
-      return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT;
-    }
-    else if (re_match(_single_name_rgxp, string) != TINY_REGEX_C_FAIL) {
-      /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _single_name_rgxp); */
-      return NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT;
-    }
-    else if (re_match(_subpattern_match_rgxp, string) != TINY_REGEX_C_FAIL) {
-      /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _subpattern_match_rgxp); */
-      return NDN_TRUST_SCHEMA_SUBPATTERN_MATCH;
-    }
-    else if (re_match(_function_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
-      /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _function_ref_rgxp); */
-      return NDN_TRUST_SCHEMA_FUNCTION_REF;
-    }
+  if (re_match(_multiple_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
+    printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _multiple_wildcard_rgxp);
+    return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE;
+  }
+  else if (re_match(_single_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
+    printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _single_wildcard_rgxp);
+    return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT;
+  }
+  else if (re_match(_single_name_rgxp, string) != TINY_REGEX_C_FAIL) {
+    printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _single_name_rgxp);
+    return NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT;
+  }
+  else if (re_match(_subpattern_match_rgxp, string) != TINY_REGEX_C_FAIL) {
+    printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _subpattern_match_rgxp);
+    return NDN_TRUST_SCHEMA_SUBPATTERN_MATCH;
+  }
+  else if (re_match(_function_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
+    printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _function_ref_rgxp);
+    return NDN_TRUST_SCHEMA_FUNCTION_REF;
+  }
+  else if (re_match(_rule_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
+    printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _rule_ref_rgxp);
+    return NDN_TRUST_SCHEMA_RULE_REF;
   }
   else {
-    if (re_match(_rule_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
-      /* printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _rule_ref_rgxp); */
-      return NDN_TRUST_SCHEMA_RULE_REF;
-    }
+    printf("In _probe_trust_schema_rule_component_type, found an unrecognizable rule component.\n");
+    return NDN_TRUST_SCHEMA_RULE_COMPONENT_UNRECOGNIZED_TYPE;
   }
-
-  /* printf("In _probe_trust_schema_rule_component_type, found an unrecognizable rule component.\n"); */
-  return NDN_TRUST_SCHEMA_RULE_COMPONENT_UNRECOGNIZED_TYPE;
-
 }
 
 /**
- * Init an NDN Trust Schema Rule Component structure from string. Please include the last byte of the string,
- * which is "\0". The function will do memory copy.
+ * Init an NDN Trust Schema Rule Component structure from string. The size should not include the terminating '\0'
+ * character. The function will do memory copy.
  * @param component. Output. The NDN Trust Schema Rule Component structure to be inited.
  * @param string. Input. String variable which NDN Trust Schema rule component initing from.
  * @param size. Input. Size of input string.
@@ -154,47 +155,65 @@ ndn_trust_schema_rule_component_from_string(ndn_trust_schema_rule_component_t* c
 {
 
   char function_msg_prefix[] = "In ndn_trust_schema_rule_component_from_string, ";
+
+  printf("In ndn_trust_schema_rule_component_from_string, size of string passed in: %d\n", size);
+  printf("In ndn_trust_schema_rule_component_from_string, string passed in: %.*s\n", size, string);
+
+  if (size+1 > NDN_TRUST_SCHEMA_RULE_COMPONENT_STRING_MAX_SIZE)
+    return NDN_OVERSIZE;
   
-  printf("In ndn_trust_schema_rule_component_from_string, string passed in: %s\n", string);
+  char temp_rule_comp_string_arr[NDN_TRUST_SCHEMA_RULE_COMPONENT_STRING_MAX_SIZE];
+
+  memcpy(temp_rule_comp_string_arr, string, size);
+  temp_rule_comp_string_arr[size] = '\0';
   
   int ret_val = -1;
   
   uint32_t string_size = string[size - 1] == '\0' ? size-1 : size;
 
-  int type = _probe_trust_schema_rule_component_type(string, size);
+  uint32_t type = _probe_trust_schema_rule_component_type(temp_rule_comp_string_arr, size);
+
+  if (type == NDN_TRUST_SCHEMA_RULE_COMPONENT_UNRECOGNIZED_TYPE)
+    return type;
 
   switch (type) {
   case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:
     printf("%sgot a single name component.\n", function_msg_prefix);
+    component->type = type;
     break;
   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT:
     printf("%sgot a wildcard name component.\n", function_msg_prefix);
+    component->type = type;
     break;
   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE:
     printf("%sgot a wildcard name component sequence.\n", function_msg_prefix);
+    component->type = type;
     break;
   case NDN_TRUST_SCHEMA_SUBPATTERN_MATCH:
     printf("%sgot a subpattern match.\n", function_msg_prefix);
-    printf("%ssubpattern query found inside of subpattern match: %.*s\n", function_msg_prefix, size-4, string + 2);
+    printf("%ssubpattern query found inside of subpattern match: %.*s\n", function_msg_prefix, size-3, temp_rule_comp_string_arr + 1);
+    component->type = type;
     break;
   case NDN_TRUST_SCHEMA_FUNCTION_REF:
     printf("%sgot a function reference.\n", function_msg_prefix);
-    printf("%sname of function being referenced: %.*s\n", function_msg_prefix, size - 4, string + 2);
+    printf("%sname of function being referenced: %.*s\n", function_msg_prefix, size-3, temp_rule_comp_string_arr + 1);
+    component->type = type;
     break;
   case NDN_TRUST_SCHEMA_RULE_REF:
     printf("%sgot a rule reference.\n", function_msg_prefix);
-    ret_val = re_match(_rule_ref_args_rgxp, string);
+    ret_val = re_match(_rule_ref_args_rgxp, temp_rule_comp_string_arr);
     if (ret_val == TINY_REGEX_C_FAIL) {
       return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
     }
     printf("%sstarting index of rule reference's arguments: %d\n", function_msg_prefix, ret_val);
-    printf("%srule reference's arguments: %.*s\n", function_msg_prefix, size - 3 - ret_val, string + ret_val + 1);
+    printf("%srule reference's arguments: %.*s\n", function_msg_prefix, size-2-ret_val, temp_rule_comp_string_arr+ret_val);
+    component->type = type;
     break;
   default:
     return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
   }
 
-  printf ("\n");
+  return 0;
   
 }
 
