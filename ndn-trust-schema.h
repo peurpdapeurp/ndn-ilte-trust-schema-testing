@@ -4,6 +4,7 @@
 
 #include "../ndn-lite/ndn-constants.h"
 #include "../ndn-lite/ndn-error-code.h"
+#include "../ndn-lite/encode/name.h"
 
 #include "tiny-regex-c/re.h"
 
@@ -130,7 +131,7 @@ _probe_trust_schema_rule_component_type(const char* string, uint32_t size)
   }
   else if (re_match(_function_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
     printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _function_ref_rgxp);
-    return NDN_TRUST_SCHEMA_FUNCTION_REF;
+    return NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER;
   }
   else if (re_match(_rule_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
     printf("In _probe_trust_schema_rule_component_type, found a match for %s.\n", _rule_ref_rgxp);
@@ -180,6 +181,8 @@ ndn_trust_schema_rule_component_from_string(ndn_trust_schema_rule_component_t* c
   case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:
     printf("%sgot a single name component.\n", function_msg_prefix);
     component->type = type;
+    memcpy(component->value, string+1, size-2);
+    component->size = size-2;
     break;
   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT:
     printf("%sgot a wildcard name component.\n", function_msg_prefix);
@@ -191,12 +194,12 @@ ndn_trust_schema_rule_component_from_string(ndn_trust_schema_rule_component_t* c
     break;
   case NDN_TRUST_SCHEMA_SUBPATTERN_MATCH:
     printf("%sgot a subpattern match.\n", function_msg_prefix);
-    printf("%ssubpattern query found inside of subpattern match: %.*s\n", function_msg_prefix, size-3, temp_rule_comp_string_arr + 1);
+    printf("%ssubpattern query found inside of subpattern match: %.*s\n", function_msg_prefix, size-3, temp_rule_comp_string_arr+2);
     component->type = type;
     break;
-  case NDN_TRUST_SCHEMA_FUNCTION_REF:
+  case NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER:
     printf("%sgot a function reference.\n", function_msg_prefix);
-    printf("%sname of function being referenced: %.*s\n", function_msg_prefix, size-3, temp_rule_comp_string_arr + 1);
+    printf("%sname of function being referenced: %.*s\n", function_msg_prefix, size-3, temp_rule_comp_string_arr+2);
     component->type = type;
     break;
   case NDN_TRUST_SCHEMA_RULE_REF:
@@ -220,12 +223,22 @@ ndn_trust_schema_rule_component_from_string(ndn_trust_schema_rule_component_t* c
 /**
  * Init an NDN Trust Schema rule from a string. This function will do memory copy and
  * only support regular string; not support URI currently.
- * @param name. Output. The NDN Trust Schema rule to be inited.
+ * @param rule. Output. The NDN Trust Schema rule to be inited.
  * @param string. Input. The string from which the NDN Trust Schema rule is inited.
  * @param size. Input. Size of the input string.
  * @return 0 if there is no error.
  */
 int
-ndn_trust_schema_rule_from_string(ndn_trust_schema_rule_t* pattern, const char* string, uint32_t size);
+ndn_trust_schema_rule_from_string(ndn_trust_schema_rule_t* rule, const char* string, uint32_t size);
+
+/**
+ * Verify that a key name matches a data name based on a trust schema rule.
+ * @param rule. Output. The NDN Trust Schema rule to be used in verifying the data name and key name pair.
+ * @param data_name. Input. The data name which will be checked against the key name based on the rule.
+ * @param key_name. Input. The name of the key to check the validity of based on the rule.
+ * @return 0 if the key's name is valid for the data's name given the trust schema rule.
+ */
+int
+ndn_trust_schema_verify_key_name(const ndn_trust_schema_rule_t* rule, const ndn_name_t* data_name, const ndn_name_t* key_name);
 
 #endif // NDN_TRUST_SCHEMA_H

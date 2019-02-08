@@ -3,7 +3,6 @@ SOURCES_C := \
 	../ndn-lite/encode/name.c \
 	../ndn-lite/encode/name-component.c \
 	tiny-regex-c/re.c \
-	ndn-re.c \
 	ndn-trust-schema.c \
 
 default:
