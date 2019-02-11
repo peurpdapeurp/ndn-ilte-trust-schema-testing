@@ -8,87 +8,16 @@
 #include <stdbool.h>
 
 int
-ndn_trust_schema_rule_from_string(ndn_trust_schema_rule_t* rule, const char* string, uint32_t size) {
+ndn_trust_schema_verify_data_name_key_name_pair(const ndn_trust_schema_rule_t* rule, const ndn_name_t* data_name, const ndn_name_t* key_name) {
+
+  const char[] function_msg_prefix = "In ndn_trust_schema_verify_key_name, ";
   
-  int ret_val = -1;
-  
-  rule->components_size = 0;
-
-  // first check if it's a rule reference
-  if (string[0] != '<' && string[0] != '(' && string[0] != '[') {
-    ndn_trust_schema_rule_component_t component;
-    ret_val = ndn_trust_schema_rule_component_from_string(&component, string, size);
-    if (ret_val != NDN_SUCCESS) return ret_val;
-    ret_val = ndn_trust_schema_rule_append_component(rule, &component);
-    if (ret_val != NDN_SUCCESS) return ret_val;
-    return 0;
-  }
-
-  int i = 0;
-  const char * current_string = string;
-  
-  // iterate through the schema rule
-  while (i+1 < size-1) {
-
-    printf("Value of current_string: %s\n", current_string);
-    
-    int rule_comp_end_index = -1;
-    
-    if (current_string[0] == '<') {
-      printf("In ndn_trust_schema_rule_from_string, found an element of rule beginning with <.\n");
-      rule_comp_end_index = re_match("^<>\\*", current_string);
-      if (rule_comp_end_index == TINY_REGEX_C_FAIL) {
-	rule_comp_end_index = re_match(">", current_string);
-	if (rule_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
-	printf("In ndn_trust_schema_rule_from_string, found a single wildcard or single name component.\n");
-      }
-      else {
-	printf("In ndn_trust_schema_rule_from_string, found a multiple wildcard.\n");
-	rule_comp_end_index += 2;
-      }
-    }
-    else if (current_string[0] == '[') {
-      printf("In ndn_trust_schema_rule_from_string, found an element of rule beginning with [.\n");
-      rule_comp_end_index = re_match("]", current_string);
-      if (rule_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
-    }
-    else if (current_string[0] == '(') {
-      printf("In ndn_trust_schema_rule_from_string, found an element of rule beginning with (.\n");
-      rule_comp_end_index = re_match(")", current_string);
-      if (rule_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
-    }
-    else {
-      if (current_string[0] == '\0')
-	return 0;
-      else
-	return NDN_TRUST_SCHEMA_RULE_COMPONENT_PARSING_ERROR;
-    }
-
-    int rule_comp_string_len = rule_comp_end_index - i + 1;
-
-    ndn_trust_schema_rule_component_t component;
-    ret_val = ndn_trust_schema_rule_component_from_string(&component, current_string, rule_comp_string_len);
-    if (ret_val != NDN_SUCCESS) return ret_val;
-    ret_val = ndn_trust_schema_rule_append_component(rule, &component);
-    if (ret_val != NDN_SUCCESS) return ret_val;
-
-    current_string += rule_comp_end_index + 1;
-    
-  }
-  
-  return 0;
-
-}
-
-int
-ndn_trust_schema_verify_key_name(const ndn_trust_schema_rule_t* rule, const ndn_name_t* data_name, const ndn_name_t* key_name) {
-
-  printf("In ndn_trust_schema_verify_key_name, printing the types of rule components in the rule:\n");
-  for (int i = 0; i < rule->components_size; i++) {
-    switch (rule->components[i].type) {
+  printf("%sprinting the types of pattern components in the rule's data name pattern:\n", function_msg_prefix);
+  for (int i = 0; i < rule->data_pattern.components_size; i++) {
+    switch (rule->data_pattern.components[i].type) {
       printf("Rule component i was a");
     case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:
-      printf(" single name component, with value: %.*s\n", rule->components[i].size, rule->components[i].value);
+      printf(" single name component, with value: %.*s\n", rule->data_pattern.components[i].size, rule->data_pattern.components[i].value);
       break;
     default:
       printf(" rule component other than a single name component.\n");
@@ -96,53 +25,67 @@ ndn_trust_schema_verify_key_name(const ndn_trust_schema_rule_t* rule, const ndn_
   }
   printf("\n");
 
-  printf("In ndn_trust_schema_verify_key_name, printing the data name:\n");
+  printf("%sprinting the types of pattern components in the rule's key name pattern:\n", function_msg_prefix);
+  for (int i = 0; i < rule->key_pattern.components_size; i++) {
+    switch (rule->key_pattern.components[i].type) {
+      printf("Rule component i was a");
+    case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:
+      printf(" single name component, with value: %.*s\n", rule->key_pattern.components[i].size, rule->key_pattern.components[i].value);
+      break;
+    default:
+      printf(" rule component other than a single name component.\n");
+    }
+  }
+  printf("\n");
+  
+  printf("%sprinting the data name:\n", function_msg_prefix);
   for (int i = 0; i < data_name->components_size; i++) {
     printf("/%.*s", data_name->components[i].size, data_name->components[i].value);
   }
   printf("\n\n");
 
-  printf("In ndn_trust_schema_verify_key_name, printing the key name:\n");
+  printf("%sprinting the key name:\n", function_msg_prefix);
   for (int i = 0; i < key_name->components_size; i++) {
     printf("/%.*s", key_name->components[i].size, key_name->components[i].value);
   }
   printf("\n\n");
 
+  bool data_name_valid = true;
   bool key_name_valid = true;
-  int ri = 0;
+  int rdpi = 0;
   int kni = 0;
   int dni = 0;
 
-  printf("Rule components size: %d\n", rule->components_size);
-  printf("key_name components size: %d\n", key_name->components_size);
+  // checking to see if the data's name matches the data pattern of the rule
+  
+  printf("Rule's data pattern components size: %d\n", rule->data_pattern.components_size);
   printf("data_name components size: %d\n", data_name->components_size);
   
-  while (ri < rule->components_size && kni < key_name->components_size && dni < data_name->components_size) {
+  while (rdpi < rule->data_pattern.components_size && dni < data_name->components_size) {
 
-    printf("Value of ri, kni, dni: %d, %d, %d\n", ri, kni, dni);
+    printf("Value of rdpi and dni: %d, %d\n", rdpi, dni);
     
-    switch (rule->components[ri].type) {
+    switch (rule->data_pattern.components[rdpi].type) {
     case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:
-      printf("In ndn_trust_schema_verify_key_name, found single name component.\n");
-      if (memcmp(rule->components[ri].value, key_name->components[kni].value, rule->components[ri].size) != 0 ||
-  	  rule->components[ri].size != key_name->components[kni].size) {
-	printf("Found that key name was invalid.\n");
-	printf("Value of rule->components[ri].value (size: %d):\n", rule->components[ri].size);
-	for (int i = 0; i < rule->components[ri].size; i++) {
+      printf("%sfound single name component.\n", function_msg_prefix);
+      if (memcmp(rule->data_pattern.components[rdpi].value, data_name->components[dni].value, rule->data_pattern.components[ri].size) != 0 ||
+  	  rule->components[rdpi].size != data_name->components[kni].size) {
+	printf("Found that data name was invalid.\n");
+	printf("Value of rule->data_pattern.components[rdpi].value (size: %d):\n", rule->data_pattern.components[rdpi].size);
+	for (int i = 0; i < rule->data_pattern.components[rdpi].size; i++) {
 	  if (i > 0) printf(":");
-	  printf("%02X", rule->components[ri].value[i]);
+	  printf("%02X", rule->data_pattern.components[rdpi].value[i]);
 	}
 	printf("\n");
-	printf("Value of key_name->components[kni].value (size: %d):\n", key_name->components[kni].size);
-	for (int i = 0; i < key_name->components[kni].size; i++) {
+	printf("Value of data_name->components[dni].value (size: %d):\n", data_name->components[dni].size);
+	for (int i = 0; i < data_name->components[dni].size; i++) {
 	  if (i > 0) printf(":");
-	  printf("%02X", key_name->components[kni].value[i]);
+	  printf("%02X", data_name->components[dni].value[i]);
 	}
 	printf("\n");
-  	key_name_valid = false;
+  	data_name_valid = false;
       }
-      ri++;
-      kni++;
+      rdpi++;
       dni++;
       break;
     case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT:
@@ -156,10 +99,59 @@ ndn_trust_schema_verify_key_name(const ndn_trust_schema_rule_t* rule, const ndn_
       break;
     }
 
-    if (!key_name_valid)
+    if (!data_name_valid)
       break;
   }
 
-  return key_name_valid ? 0 : -1;
+  /* // checking to see if key's name matches key pattern of the rule */
+
+  /* printf("Rule's data pattern components size: %d\n", rule->data_pattern.components_size); */
+  /* printf("key_name components size: %d\n", key_name->components_size); */
+  /* printf("data_name components size: %d\n", data_name->components_size); */
+  
+  /* while (ri < rule->components_size && kni < key_name->components_size && dni < data_name->components_size) { */
+
+  /*   printf("Value of ri, kni, dni: %d, %d, %d\n", ri, kni, dni); */
+    
+  /*   switch (rule->components[ri].type) { */
+  /*   case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT: */
+  /*     printf("%sfound single name component.\n", function_msg_prefix); */
+  /*     if (memcmp(rule->components[ri].value, key_name->components[kni].value, rule->components[ri].size) != 0 || */
+  /* 	  rule->components[ri].size != key_name->components[kni].size) { */
+  /* 	printf("Found that key name was invalid.\n"); */
+  /* 	printf("Value of rule->components[ri].value (size: %d):\n", rule->components[ri].size); */
+  /* 	for (int i = 0; i < rule->components[ri].size; i++) { */
+  /* 	  if (i > 0) printf(":"); */
+  /* 	  printf("%02X", rule->components[ri].value[i]); */
+  /* 	} */
+  /* 	printf("\n"); */
+  /* 	printf("Value of key_name->components[kni].value (size: %d):\n", key_name->components[kni].size); */
+  /* 	for (int i = 0; i < key_name->components[kni].size; i++) { */
+  /* 	  if (i > 0) printf(":"); */
+  /* 	  printf("%02X", key_name->components[kni].value[i]); */
+  /* 	} */
+  /* 	printf("\n"); */
+  /* 	key_name_valid = false; */
+  /*     } */
+  /*     ri++; */
+  /*     kni++; */
+  /*     dni++; */
+  /*     break; */
+  /*   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT: */
+  /*     printf("In ndn_trust_Schema_verify_key_name, found wildcard name component.\n"); */
+  /*     ri++; */
+  /*     kni++; */
+  /*     dni++; */
+  /*     break; */
+  /*   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE: */
+  /*     printf("In ndn_trust_Schema_verify_key_name, found wildcard name component sequence.\n"); */
+  /*     break; */
+  /*   } */
+
+  /*   if (!key_name_valid) */
+  /*     break; */
+  /* } */
+  
+  return (data_name_valid && key_name_valid) ? 0 : -1;
   
 }
