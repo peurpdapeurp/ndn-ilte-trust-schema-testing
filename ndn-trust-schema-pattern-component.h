@@ -3,7 +3,6 @@
 #define NDN_TRUST_SCHEMA_PATTERN_COMPONENT_H
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "tiny-regex-c/re.h"
@@ -63,36 +62,27 @@ ndn_trust_schema_pattern_component_from_buffer(ndn_trust_schema_pattern_componen
 static inline uint32_t
 _probe_trust_schema_pattern_component_type(const char* string, uint32_t size)
 {  
-  printf("In _probe_trust_schema_pattern_component_type, string passed in: %s\n", string);
-
   int ret_val = -1;
 
   if (re_match(_multiple_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
-    printf("In _probe_trust_schema_pattern_component_type, found a match for %s.\n", _multiple_wildcard_rgxp);
     return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE;
   }
   else if (re_match(_single_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
-    printf("In _probe_trust_schema_pattern_component_type, found a match for %s.\n", _single_wildcard_rgxp);
     return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT;
   }
   else if (re_match(_single_name_rgxp, string) != TINY_REGEX_C_FAIL) {
-    printf("In _probe_trust_schema_pattern_component_type, found a match for %s.\n", _single_name_rgxp);
     return NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT;
   }
   else if (re_match(_subpattern_match_rgxp, string) != TINY_REGEX_C_FAIL) {
-    printf("In _probe_trust_schema_pattern_component_type, found a match for %s.\n", _subpattern_match_rgxp);
     return NDN_TRUST_SCHEMA_SUBPATTERN_MATCH;
   }
   else if (re_match(_function_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
-    printf("In _probe_trust_schema_pattern_component_type, found a match for %s.\n", _function_ref_rgxp);
     return NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER;
   }
   else if (re_match(_rule_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
-    printf("In _probe_trust_schema_pattern_component_type, found a match for %s.\n", _rule_ref_rgxp);
     return NDN_TRUST_SCHEMA_RULE_REF;
   }
   else {
-    printf("In _probe_trust_schema_pattern_component_type, found an unrecognizable pattern component.\n");
     return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_UNRECOGNIZED_TYPE;
   }
 }

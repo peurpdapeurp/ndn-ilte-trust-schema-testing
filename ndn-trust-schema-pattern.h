@@ -35,13 +35,9 @@ typedef struct ndn_trust_schema_pattern {
 static inline int
 ndn_trust_schema_pattern_append_component(ndn_trust_schema_pattern_t *pattern, const ndn_trust_schema_pattern_component_t* component)
 {
-  printf("In ndn_trust_schema_pattern_append_component, value of pattern->components_size + 1: %d\n", pattern->components_size + 1);
-  
   if (pattern->components_size + 1 <= NDN_NAME_COMPONENTS_SIZE) {
     memcpy(pattern->components + pattern->components_size, component, sizeof(ndn_trust_schema_pattern_component_t));
     pattern->components_size++;
-
-    printf("In ndn_trust_schema_pattern_append_component, increased components_size from %d to %d.\n", pattern->components_size - 1, pattern->components_size);
     
     return 0;
   }

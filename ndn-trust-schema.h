@@ -3,7 +3,6 @@
 #define NDN_TRUST_SCHEMA_H
 
 #include <string.h>
-#include <stdio.h>
 
 #include "../ndn-lite/ndn-constants.h"
 #include "../ndn-lite/ndn-error-code.h"

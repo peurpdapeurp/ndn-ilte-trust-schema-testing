@@ -1,8 +1,6 @@
 
 #include "ndn-trust-schema-pattern.h"
 
-#include <stdio.h>
-
 int
 ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const char* string, uint32_t size) {
   
@@ -26,30 +24,23 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
   // iterate through the schema pattern
   while (i+1 < size-1) {
 
-    printf("Value of current_string: %s\n", current_string);
-    
     int pattern_comp_end_index = -1;
     
     if (current_string[0] == '<') {
-      printf("In ndn_trust_schema_pattern_from_string, found an element of pattern beginning with <.\n");
       pattern_comp_end_index = re_match("^<>\\*", current_string);
       if (pattern_comp_end_index == TINY_REGEX_C_FAIL) {
 	pattern_comp_end_index = re_match(">", current_string);
 	if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
-	printf("In ndn_trust_schema_pattern_from_string, found a single wildcard or single name component.\n");
       }
       else {
-	printf("In ndn_trust_schema_pattern_from_string, found a multiple wildcard.\n");
 	pattern_comp_end_index += 2;
       }
     }
     else if (current_string[0] == '[') {
-      printf("In ndn_trust_schema_pattern_from_string, found an element of pattern beginning with [.\n");
       pattern_comp_end_index = re_match("]", current_string);
       if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
     }
     else if (current_string[0] == '(') {
-      printf("In ndn_trust_schema_pattern_from_string, found an element of pattern beginning with (.\n");
       pattern_comp_end_index = re_match(")", current_string);
       if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
     }
