@@ -79,6 +79,10 @@ void _check_name_against_pattern(bool *name_valid, const ndn_trust_schema_patter
 	  printf("Didnt get a match.\n");
 	}
       }
+      else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_SUBPATTERN_MATCH) {
+	printf("Value of subpattern match found: %.*s\n", pattern->components[j-1].size, pattern->components[j-1].value);
+	
+      }
       else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
         results[i][j] = (results[i-1][j] || results[i][j-1]);
       }

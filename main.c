@@ -16,6 +16,10 @@ static ndn_trust_schema_rule_t test_rule_2;
 static char test_rule_data_pattern_string_2[] = "<test><test>[t.*t]";
 static char test_rule_key_pattern_string_2[] = "<test><test>[.es.]";
 
+static ndn_trust_schema_rule_t test_rule_3;
+static char test_rule_data_pattern_string_3[] = "<test><test>(<>)";
+static char test_rule_key_pattern_string_3[] = "<test><test>(<>)";
+
 static ndn_name_t test_data_name_1;
 static char test_data_name_string_1[] = "/test/test/test";
 
@@ -68,6 +72,14 @@ int _initialize_test_objects() {
   ret_val = ndn_trust_schema_rule_from_strings(&test_rule_2,
 					       test_rule_data_pattern_string_2, sizeof(test_rule_data_pattern_string_2),
 					       test_rule_key_pattern_string_2, sizeof(test_rule_key_pattern_string_2));
+  if (ret_val != NDN_SUCCESS) {
+    printf("Call to ndn_trust_schema_rule_from_strings failed, error code: %d\n", ret_val);
+    return ret_val;
+  }  
+  printf("\n");
+  ret_val = ndn_trust_schema_rule_from_strings(&test_rule_3,
+					       test_rule_data_pattern_string_3, sizeof(test_rule_data_pattern_string_3),
+					       test_rule_key_pattern_string_3, sizeof(test_rule_key_pattern_string_3));
   if (ret_val != NDN_SUCCESS) {
     printf("Call to ndn_trust_schema_rule_from_strings failed, error code: %d\n", ret_val);
     return ret_val;
@@ -135,5 +147,11 @@ int main() {
 	   &test_data_name_1, test_data_name_string_1,
 	   &test_key_name_2, test_key_name_string_2);
   
+  run_test(&test_rule_3,
+	   test_rule_data_pattern_string_3, test_rule_key_pattern_string_3,
+	   &test_data_name_1, test_data_name_string_1,
+	   &test_key_name_1, test_key_name_string_1);
+  
+
   return 0;
 }
