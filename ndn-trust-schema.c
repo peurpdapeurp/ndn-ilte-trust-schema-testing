@@ -9,49 +9,12 @@
 
 void _check_name_against_pattern(bool *name_valid, const ndn_trust_schema_pattern_t *pattern, const ndn_name_t* name) {
 
-  /* printf("Values in pattern: \n"); */
-  /* for (int i = 0; i < pattern->components_size; i++) { */
-  /*   printf("Type of pattern index %d: %d\n", i, pattern->components[i].type); */
-  /*   switch (pattern->components[i].type) { */
-  /*   case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:   */
-  /*     printf("  Value of pattern index %d: %.*s\n", i, pattern->components[i].size, pattern->components[i].value); */
-  /*   default: */
-  /*     break; */
-  /*   } */
-  /* } */
+  const char function_msg_prefix[] = "In _check_name_against_pattern,";
 
-  /* printf("Values in name: \n"); */
-  /* for (int i = 0; i < name->components_size; i++) { */
-  /*   printf("Value of name index %d: %.*s\n", i, name->components[i].size, name->components[i].value); */
-  /* } */
-
-  /* printf("\n\n"); */
+  // allocate arrays for checking wildcard specializers
+  char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  
+  char temp_name_component_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];
   
-  /* int pi = 0, ni = 0; */
-  
-  /* while (pi < pattern->components_size && ni < name->components_size) {     */
-  /*   switch (pattern->components[pi].type) { */
-  /*   case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:       */
-  /*     if (memcmp(pattern->components[pi].value, name->components[ni].value, pattern->components[pi].size) != 0 || */
-  /* 	  pattern->components[pi].size != name->components[ni].size) { */
-  /* 	*name_valid = false; */
-  /*     } */
-  /*     pi++; */
-  /*     ni++; */
-  /*     break; */
-  /*   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT: */
-  /*     pi++; */
-  /*     ni++; */
-  /*     break; */
-  /*   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE: */
-      
-  /*     break; */
-  /*   } */
-
-  /*   if (!(*name_valid)) */
-  /*     break; */
-  /* } */
-
   int pat_len = pattern->components_size;
   int name_len = name->components_size;
   
@@ -69,22 +32,13 @@ void _check_name_against_pattern(bool *name_valid, const ndn_trust_schema_patter
     }
   }
 
-  printf("Value of results array after initialization:\n");
-  for (int i = 0; i < name_len; i++) {
-    for (int j = 0; j < pat_len; j++) {
-      printf("%d ", results[i][j]);
-    }
-    printf("\n");
-  }
-  printf("\n\n");
-  
-  // for the base case of comparing an empty string to an empty pattern,
+  // for the base case of comparing a 0 component name to a 0 component pattern,
   // the result is true
   results[0][0] = true;
 
   // first check successively larger substrings of the schema pattern containing
-  // the first character of the pattern (i.e. from pattern "abc", check "a", then "ab", then "abc")
-  // against an empty string
+  // the first component of the pattern (i.e. from pattern <a><b><c>, check <a>, then <ab>, then <abc>)
+  // against a 0 component name
   for (int j = 1; j < pat_len+1; j++) {
     if (pattern->components[j-1].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
       break;
@@ -93,15 +47,37 @@ void _check_name_against_pattern(bool *name_valid, const ndn_trust_schema_patter
 
   for (int i = 1; i < name_len+1; i++) {
     for (int j = 1; j < pat_len+1; j++) {
-      if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT ||
-	  
-	  (pattern->components[j-1].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT &&
-	   memcmp(pattern->components[j-1].value, name->components[i-1].value, pattern->components[j-1].size) == 0 &&
-	   pattern->components[j-1].size == name->components[i-1].size)
-	  
-	  )
+      if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT)
       {
         results[i][j] = results[i-1][j-1];
+      }
+      else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {
+	if (
+	    memcmp(pattern->components[j-1].value, name->components[i-1].value, pattern->components[j-1].size) == 0 &&
+	    pattern->components[j-1].size == name->components[i-1].size
+	   )
+	  results[i][j] = results[i-1][j-1];
+      }
+      else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER) {
+	memcpy(temp_wildcard_specializer_string_arr, pattern->components[j-1].value, pattern->components[j-1].size);
+	temp_wildcard_specializer_string_arr[pattern->components[j-1].size] = '\0';
+
+	memcpy(temp_name_component_string_arr, name->components[i-1].value, name->components[i-1].size);
+	temp_name_component_string_arr[name->components[i-1].size] = '\0';
+	
+	printf("%s checking regex pattern %.*s against string %.*s\n",
+	       function_msg_prefix,
+	       pattern->components[j-1].size, temp_wildcard_specializer_string_arr,
+	       name->components[i-1].size, temp_name_component_string_arr);
+	
+	int ret_val = re_match(temp_wildcard_specializer_string_arr, temp_name_component_string_arr);
+	if (ret_val != TINY_REGEX_C_FAIL) {
+	  results[i][j] = results[i-1][j-1];
+	  printf("Got a match.\n");
+	}
+	else {
+	  printf("Didnt get a match.\n");
+	}
       }
       else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
         results[i][j] = (results[i-1][j] || results[i][j-1]);
@@ -119,6 +95,7 @@ void _check_name_against_pattern(bool *name_valid, const ndn_trust_schema_patter
   printf("\n\n");
   
   *name_valid = results[name_len][pat_len];
+  
 }
 
 int

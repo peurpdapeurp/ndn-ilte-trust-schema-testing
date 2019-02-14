@@ -10,8 +10,6 @@ int
 ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_component_t* component, const char* string, uint32_t size)
 {
 
-  char function_msg_prefix[] = "In ndn_trust_schema_pattern_component_from_string, ";
-
   if (size+1 > NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE)
     return NDN_OVERSIZE;
   
@@ -46,6 +44,8 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
     break;
   case NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER:
     component->type = type;
+    memcpy(component->value, string+1, size-2);
+    component->size = size-2;
     break;
   case NDN_TRUST_SCHEMA_RULE_REF:
     ret_val = re_match(_rule_ref_args_rgxp, temp_pattern_comp_string_arr);
