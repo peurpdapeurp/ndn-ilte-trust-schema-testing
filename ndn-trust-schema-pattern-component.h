@@ -26,6 +26,17 @@ typedef struct ndn_trust_schema_pattern_component {
    */
   uint8_t value[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_BUFFER_SIZE];
   /**
+   * A bit field for storing information regarding subpattern indexing information. 
+   * The first two bits interpreted as an unsigned integer store whether this component 
+   *   is the beginning of a subpattern, the end of a subpattern, both, or neither.
+   *   The actual values can be found in ndn-constants.h.
+   * The next three bits interpreted as an unsigned integer store the index x of the subpattern
+   *   if the pattern component is the beginning of a subpattern with index x.
+   * The last three bits interpreted as an unsigned integer store the index x of the subpattern
+   *   if the pattern component is the end of a subpattern with index x.
+   */
+  uint8_t subpattern_info;
+  /**
    * The size of component value buffer.
    */
   uint32_t size;
@@ -73,8 +84,8 @@ _probe_trust_schema_pattern_component_type(const char* string, uint32_t size)
   else if (re_match(_single_name_rgxp, string) != TINY_REGEX_C_FAIL) {
     return NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT;
   }
-  else if (re_match(_subpattern_match_rgxp, string) != TINY_REGEX_C_FAIL) {
-    return NDN_TRUST_SCHEMA_SUBPATTERN_MATCH;
+  else if (re_match(_subpattern_index_rgxp, string) != TINY_REGEX_C_FAIL) {
+    return NDN_TRUST_SCHEMA_SUBPATTERN_INDEX;
   }
   else if (re_match(_function_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
     return NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER;

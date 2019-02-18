@@ -5,7 +5,7 @@
 static char _single_name_rgxp[] = "^<.+>$";
 static char _single_wildcard_rgxp[] = "^<>$";
 static char _multiple_wildcard_rgxp[] = "^<>\\*$";
-static char _subpattern_match_rgxp[] = "^(.+)$";
+static char _subpattern_index_rgxp[] = "^\\\\d$";
 static char _function_ref_rgxp[] = "^\\[.+\\]$";
 static char _rule_ref_rgxp[] = "^.+(.+)$";
 static char _rule_ref_args_rgxp[] = "(\\\\d*,?.*)$";

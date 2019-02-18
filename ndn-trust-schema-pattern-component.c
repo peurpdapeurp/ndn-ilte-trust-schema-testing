@@ -39,11 +39,6 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE:
     component->type = type;
     break;
-  case NDN_TRUST_SCHEMA_SUBPATTERN_MATCH:
-    component->type = type;
-    memcpy(component->value, string+1, size-2);
-    component->size = size-2;
-    break;
   case NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER:
     component->type = type;
     memcpy(component->value, string+1, size-2);
