@@ -24,8 +24,10 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
   // allocate arrays for checking wildcard specializers
   char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  
   char temp_name_component_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];
-  
-  int pat_len = pattern->components_size;
+
+  // subtract two to account for the end and beginning padding components, which are only there to
+  // store subpattern indexing related information for subpatterns at the beginning / end of pattern
+  int pat_len = pattern->components_size - 2;
   int name_len = name->components_size;
   
   if (pat_len == 2 && name_len == 0) {
@@ -56,26 +58,26 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
 
   for (int i = 1; i < name_len+1; i++) {
     for (int j = 1; j < pat_len+1; j++) {
-      if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
+      if (pattern->components[j].type == NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
 	results[i][j] = results[i-1][j-1];
       }
-      else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT)
+      else if (pattern->components[j].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT)
       {
         results[i][j] = results[i-1][j-1];
       }
-      else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {
+      else if (pattern->components[j].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {
 
 	printf("%s checking string %.*s (pattern) against string %.*s (name)\n",
 	       function_msg_prefix,
-	       pattern->components[j-1].size, pattern->components[j-1].value,
+	       pattern->components[j].size, pattern->components[j].value,
 	       name->components[i-1].size, name->components[i-1].value);
 	
 	if (
-	    memcmp(pattern->components[j-1].value, name->components[i-1].value, pattern->components[j-1].size) == 0 &&
-	    pattern->components[j-1].size == name->components[i-1].size
+	    memcmp(pattern->components[j].value, name->components[i-1].value, pattern->components[j].size) == 0 &&
+	    pattern->components[j].size == name->components[i-1].size
 	    ) {
 	  printf("Got a match.\n");
-	  printf("Value of results [i-1][j-1]: %d\n", results[i-1][j-1]);
+	  printf("Value of results [i-1][j]: %d\n", results[i-1][j]);
 	  printf("Value of i, j: %d, %d\n", i, j);
 	  results[i][j] = results[i-1][j-1];
 	}
@@ -83,16 +85,16 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
 	  printf("Didn't get a match.\n");
 	}
       }
-      else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER) {
-	memcpy(temp_wildcard_specializer_string_arr, pattern->components[j-1].value, pattern->components[j-1].size);
-	temp_wildcard_specializer_string_arr[pattern->components[j-1].size] = '\0';
+      else if (pattern->components[j].type == NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER) {
+	memcpy(temp_wildcard_specializer_string_arr, pattern->components[j].value, pattern->components[j].size);
+	temp_wildcard_specializer_string_arr[pattern->components[j].size] = '\0';
 
 	memcpy(temp_name_component_string_arr, name->components[i-1].value, name->components[i-1].size);
 	temp_name_component_string_arr[name->components[i-1].size] = '\0';
 	
 	printf("%s checking regex pattern %.*s against string %.*s\n",
 	       function_msg_prefix,
-	       pattern->components[j-1].size, temp_wildcard_specializer_string_arr,
+	       pattern->components[j].size, temp_wildcard_specializer_string_arr,
 	       name->components[i-1].size, temp_name_component_string_arr);
 	
 	int ret_val = re_match(temp_wildcard_specializer_string_arr, temp_name_component_string_arr);
@@ -104,7 +106,7 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
 	  printf("Didnt get a match.\n");
 	}
       }
-      else if (pattern->components[j-1].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
+      else if (pattern->components[j].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
         results[i][j] = (results[i-1][j] || results[i][j-1]);
       }
     }
