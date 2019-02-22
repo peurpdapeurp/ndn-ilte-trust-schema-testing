@@ -8,6 +8,7 @@ int
 ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const char* string, uint32_t size) {
 
   printf("Converting this ndn trust schema pattern: %.*s\n", size, string);
+  printf("---\n\n");
   
   int ret_val = -1;
   
@@ -21,7 +22,7 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
   if (ret_val != NDN_SUCCESS) return ret_val;
   
   // first check if it's a rule reference
-  if (string[0] != '<' && string[0] != '(' && string[0] != '[') {
+  if (string[0] != '<' && string[0] != '(' && string[0] != '[' && string[0] != '\\') {
     ndn_trust_schema_pattern_component_t component;
     ret_val = ndn_trust_schema_pattern_component_from_string(&component, string, size);
     if (ret_val != NDN_SUCCESS) return ret_val;
@@ -55,6 +56,11 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
     }
     else if (current_string[0] == '[') {
       pattern_comp_end_index = re_match("]", current_string);
+      if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+    }
+    else if (current_string[0] == '\\') {
+      printf("Found a \\ character in pattern being parsed.\n");
+      pattern_comp_end_index = re_match("[0-9]", current_string);
       if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
     }
     else if (current_string[0] == '(') {

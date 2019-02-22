@@ -12,6 +12,8 @@
 
 #include "ndn-trust-schema-common.h"
 
+#include <stdio.h>
+
 /**
  * The structure to represent an NDN Trust Schema Pattern Component.
  */
@@ -75,6 +77,8 @@ _probe_trust_schema_pattern_component_type(const char* string, uint32_t size)
 {  
   int ret_val = -1;
 
+  printf("String passed into _probe_trust_schema_pattern_component_type: %.*s\n\n", size, string);
+
   if (re_match(_multiple_wildcard_rgxp, string) != TINY_REGEX_C_FAIL) {
     return NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE;
   }
@@ -85,6 +89,7 @@ _probe_trust_schema_pattern_component_type(const char* string, uint32_t size)
     return NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT;
   }
   else if (re_match(_subpattern_index_rgxp, string) != TINY_REGEX_C_FAIL) {
+    printf("In _probe_trust_schema_pattern_component_from_string, found a subpattern index.\n");
     return NDN_TRUST_SCHEMA_SUBPATTERN_INDEX;
   }
   else if (re_match(_function_ref_rgxp, string) != TINY_REGEX_C_FAIL) {
