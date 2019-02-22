@@ -135,6 +135,12 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
     printf("Type of pattern component %d: %d\n", i, pattern->components[i].type);
     printf("Subpattern info of pattern component %d: %d\n", i, pattern->components[i].subpattern_info);
   }
+
+  if (current_subpattern_begin_index != current_subpattern_end_index) {
+    return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+  }
+
+  pattern->num_subpattern_captures = current_subpattern_begin_index;
   
   return 0;
   

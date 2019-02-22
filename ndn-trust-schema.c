@@ -7,8 +7,23 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+typedef struct {
+  // the subpattern pattern end index
+  int SPE_pi;
+  // the subpattern pattern begin index
+  int SPE_ni;
+  // the subpattern's associated name end index
+  int SPB_pi;
+  // the subpattern's associated name begin index
+  int SPB_ni;
+} subpattern_index_info;
+
 int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const ndn_name_t* name) {
 
+  const char function_msg_prefix[] = "In _check_name_against_pattern,";
+
+  printf("%s pattern's number of subpattern captures was: %d\n", function_msg_prefix, pattern->num_subpattern_captures);
+  
   if (pattern->components_size < 2) {
     return NDN_TRUST_SCHEMA_PATTERN_TOO_SMALL;
   }
@@ -18,8 +33,6 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
   if (pattern->components[pattern->components_size-1].type != NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
     return NDN_TRUST_SCHEMA_PATTERN_DID_NOT_END_WITH_PADDING_COMPONENT;
   }
-  
-  const char function_msg_prefix[] = "In _check_name_against_pattern,";
 
   // allocate arrays for checking wildcard specializers
   char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  
@@ -51,13 +64,14 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
   // the first component of the pattern (i.e. from pattern <a><b><c>, check <a>, then <ab>, then <abc>)
   // against a 0 component name
   for (int j = 1; j < pat_len+1; j++) {
-    if (pattern->components[j-1].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
+    if (pattern->components[j].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
       break;
     results[0][j] = true;
   }
 
   for (int i = 1; i < name_len+1; i++) {
     for (int j = 1; j < pat_len+1; j++) {
+      
       if (pattern->components[j].type == NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
 	results[i][j] = results[i-1][j-1];
       }
@@ -66,23 +80,11 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
         results[i][j] = results[i-1][j-1];
       }
       else if (pattern->components[j].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {
-
-	printf("%s checking string %.*s (pattern) against string %.*s (name)\n",
-	       function_msg_prefix,
-	       pattern->components[j].size, pattern->components[j].value,
-	       name->components[i-1].size, name->components[i-1].value);
-	
 	if (
 	    memcmp(pattern->components[j].value, name->components[i-1].value, pattern->components[j].size) == 0 &&
 	    pattern->components[j].size == name->components[i-1].size
 	    ) {
-	  printf("Got a match.\n");
-	  printf("Value of results [i-1][j]: %d\n", results[i-1][j]);
-	  printf("Value of i, j: %d, %d\n", i, j);
 	  results[i][j] = results[i-1][j-1];
-	}
-	else {
-	  printf("Didn't get a match.\n");
 	}
       }
       else if (pattern->components[j].type == NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER) {
@@ -92,18 +94,9 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
 	memcpy(temp_name_component_string_arr, name->components[i-1].value, name->components[i-1].size);
 	temp_name_component_string_arr[name->components[i-1].size] = '\0';
 	
-	printf("%s checking regex pattern %.*s against string %.*s\n",
-	       function_msg_prefix,
-	       pattern->components[j].size, temp_wildcard_specializer_string_arr,
-	       name->components[i-1].size, temp_name_component_string_arr);
-	
 	int ret_val = re_match(temp_wildcard_specializer_string_arr, temp_name_component_string_arr);
 	if (ret_val != TINY_REGEX_C_FAIL) {
 	  results[i][j] = results[i-1][j-1];
-	  printf("Got a match.\n");
-	}
-	else {
-	  printf("Didnt get a match.\n");
 	}
       }
       else if (pattern->components[j].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
@@ -111,7 +104,7 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
       }
     }
   }
-
+  
   printf("Value of results array after processing:\n");
   for (int i = 0; i < name_len+1; i++) {
     for (int j = 0; j < pat_len+1; j++) {
@@ -120,9 +113,188 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
     printf("\n");
   }
   printf("\n\n");
+
+  if  (!results[name_len][pat_len]) {
+    return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+  }
+
+  if (pattern->num_subpattern_captures == 0)
+    return NDN_SUCCESS;
   
-  return (results[name_len][pat_len]) ? NDN_SUCCESS : NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+  int num_subpattern_captures = pattern->num_subpattern_captures;
+  subpattern_index_info subpattern_index_infos[num_subpattern_captures];
   
+  int name_index = name_len;
+  int pattern_index = pattern->components_size-1;
+  int last_pattern_index = pattern_index;
+  int current_subpattern_info = 0;
+  int current_subpattern_info_type = 0;
+  int subpattern_index = 0;
+  
+  // first check the dummy component at the end of the pattern to see if it is the end of a subpattern
+  current_subpattern_info = pattern->components[pattern_index].subpattern_info;
+  current_subpattern_info_type = current_subpattern_info >> 6;
+  if (current_subpattern_info_type & NDN_TRUST_SCHEMA_SUBPATTERN_END_ONLY) {
+    printf("Dummy component at end of pattern was a subpattern ending.\n");
+    subpattern_index = current_subpattern_info & 0x07;
+    printf("Index of subpattern ending: %d\n", subpattern_index);
+    subpattern_index_infos[subpattern_index].SPE_pi = pattern_index-1;
+    subpattern_index_infos[subpattern_index].SPE_ni = name_index;
+  }
+  
+  pattern_index--;
+
+  printf("--\n");
+  
+  while (name_index >= 0 && pattern_index >= 0) {
+
+    // check to see if we have changed columns since the last iteration; this will allow us
+    // to properly populate subpattern index ending's name indexes
+    if (pattern_index != last_pattern_index) {
+
+      printf("Got to a new pattern index of %d\n", pattern_index);
+      
+      for (int i = 0; i < num_subpattern_captures; i++) {
+	if (subpattern_index_infos[i].SPE_pi == pattern_index) {
+
+	  printf("Found that subpattern index %d's SPE_pi was equal to %d; setting its SPE_ni to %d.\n",
+		 i, pattern_index, name_index);
+	  
+	  subpattern_index_infos[i].SPE_ni = name_index;
+	}
+      }
+      
+      last_pattern_index = pattern_index;
+    }
+
+    // check the subpattern info of the current step, to see if there is any subpattern ending or beginning
+    // index information stored here
+    current_subpattern_info = pattern->components[pattern_index].subpattern_info;
+    current_subpattern_info_type = current_subpattern_info >> 6;
+    if ((pattern->components[pattern_index].subpattern_info >> 6) & NDN_TRUST_SCHEMA_SUBPATTERN_BEGIN_ONLY) {
+      printf("At pattern index %d and name index %d, found a subpattern beginning.\n", pattern_index, name_index);
+      subpattern_index = (pattern->components[pattern_index].subpattern_info >> 3) & 0x07;
+      printf("Index of subpattern beginning: %d\n", subpattern_index);
+      subpattern_index_infos[subpattern_index].SPB_pi = pattern_index;
+      subpattern_index_infos[subpattern_index].SPB_ni = name_index;
+    }
+    if ((pattern->components[pattern_index].subpattern_info >> 6) & NDN_TRUST_SCHEMA_SUBPATTERN_END_ONLY) {
+      printf("At pattern index %d and name index %d, found a subpattern ending.\n", pattern_index, name_index);
+      subpattern_index = (pattern->components[pattern_index].subpattern_info) & 0x07;
+      printf("Index of subpattern ending: %d\n", subpattern_index);
+      subpattern_index_infos[subpattern_index].SPE_pi = pattern_index-1;
+    }
+    if ((pattern->components[pattern_index].subpattern_info >> 6) == 0) {
+      printf("At pattern index %d and name index %d, found a pattern that was netiher beginning or ending of subpattern.\n",
+	     pattern_index, name_index);
+    }
+
+    // now check the type of the pattern compoennt to see what the indexes of the previous submatch were
+    // (i.e., what indexes of the results table we should backtrace to)
+    if (pattern->components[pattern_index].type == NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
+      printf("Got to a pattern padding component (pattern index %d), meaning we have reached the beginning of the pattern.\n", pattern_index);
+      break;
+    }
+    else if (pattern->components[pattern_index].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT) {
+      printf("Got to a wildcard name component (pattern index %d), meaning the previous match was at the diagonal upper left.\n", pattern_index);
+      pattern_index--;
+      name_index--;
+    }
+    else if (pattern->components[pattern_index].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {
+      printf("Got to a single name component (pattern index %d), meaning the previous match was at the diagonal upper left.\n", pattern_index);
+      pattern_index--;
+      name_index--;
+    }
+    else if (pattern->components[pattern_index].type == NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER) {
+      printf("Got to a wildcard specializer (pattern index %d), meaning the previous match was at the diagonal upper left.\n", pattern_index);
+      pattern_index--;
+      name_index--;
+    }
+    else if (pattern->components[pattern_index].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
+      printf("Got to a wildcard name component sequence (pattern index %d).\n", pattern_index);
+      if (results[name_index-1][pattern_index]) {
+	printf("Found by checking the results table that the wildcard name component sequence's last step was above.\n");
+	name_index--;
+      }
+      else if (results[name_index][pattern_index-1]) {
+	printf("Found by checking the results table that the wildcard name component sequence's last step was to the left.\n");
+	pattern_index--;
+      }
+    }
+
+    printf("--\n");
+    
+  }
+  printf("\n\n");
+
+  int SPE_pi, SPB_pi, SPE_ni, SPB_ni;
+  printf("Subpattern index information:\n-----\n");
+  for (int i = 0; i < num_subpattern_captures; i++) {
+
+    printf("Information of subpattern index %d:\n", i);
+    
+    SPE_pi = subpattern_index_infos[i].SPE_pi;
+    SPB_pi = subpattern_index_infos[i].SPB_pi;
+    SPE_ni = subpattern_index_infos[i].SPE_ni;
+    SPB_ni = subpattern_index_infos[i].SPB_ni;
+    
+    printf("SPE_pi: %d\n", SPE_pi);
+    printf("SPB_pi: %d\n", SPB_pi);
+
+    printf("Value of pattern for subpattern match, calculated using _pi indexes:\n");
+    
+    for (int i = 0; i+1 <= SPE_pi - SPB_pi; i++) {
+      int current_pattern_index = SPB_pi + i + 1;
+      if (pattern->components[current_pattern_index].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT) {
+	printf("<>");    
+      }
+      else if (pattern->components[current_pattern_index].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {
+	printf("<%.*s>", pattern->components[current_pattern_index].size, pattern->components[current_pattern_index].value);
+      }
+      else if (pattern->components[current_pattern_index].type == NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER) {
+	printf("[%.*s]", pattern->components[current_pattern_index].size, pattern->components[current_pattern_index].value);
+      }
+      else if (pattern->components[current_pattern_index].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
+	printf("<>*");
+      }
+    }
+    printf("\n\n");
+    
+    printf("SPE_ni: %d\n", SPE_ni);    
+    printf("SPB_ni: %d\n", SPB_ni);
+
+    printf("Value of name for subpattern match, calculated using _ni indexes:\n");    
+    for (int i = 0; i < SPE_ni - SPB_ni; i++) {
+      int current_name_index = SPB_ni + i;
+      printf("/%.*s", name->components[current_name_index].size, name->components[current_name_index].value);
+    }
+    printf("\n\n");
+
+    printf("--\n");
+  }
+  printf("\n");
+  
+  /* int name_index = name_len; */
+  /* int pat_index = pat_len; */
+  /* while (name_index >= 0) { */
+  /*   pat_index = pat_len; */
+  /*   while (pat_index >= 0) { */
+  /*     printf("Value of pattern->components[%d].subpattern_info >> 6: %d\n", pat_index, pattern->components[pat_index].subpattern_info >> 6); */
+      
+  /*     if ((pattern->components[pat_index].subpattern_info >> 6) & NDN_TRUST_SCHEMA_SUBPATTERN_BEGIN_ONLY) { */
+  /* 	printf("At pattern index %d and name index %d, found a subpattern beginning.\n", pat_index, name_index); */
+  /* 	printf("Index of subpattern beginning: %d\n", (pattern->components[pat_index].subpattern_info >> 3) & 0x07); */
+  /*     } */
+  /*     if ((pattern->components[pat_index].subpattern_info >> 6) & NDN_TRUST_SCHEMA_SUBPATTERN_END_ONLY) { */
+  /* 	printf("At pattern index %d and name index %d, found a subpattern ending.\n", pat_index, name_index); */
+  /* 	printf("Index of subpattern ending: %d\n", (pattern->components[pat_index].subpattern_info) & 0x07); */
+  /*     } */
+  /*     pat_index--; */
+  /*   } */
+  /*   name_index--; */
+  /* } */
+
+  return NDN_SUCCESS;
 }
 
 int
@@ -135,12 +307,18 @@ ndn_trust_schema_verify_data_name_key_name_pair(const ndn_trust_schema_rule_t* r
   printf("Checking data name pattern.\n\n");
   
   ret_val = _check_name_against_pattern(&rule->data_pattern, data_name);
-  if (ret_val != NDN_SUCCESS) return NDN_TRUST_SCHEMA_DATA_NAME_DID_NOT_MATCH;
+  if (ret_val != NDN_SUCCESS) {
+    printf("%s failed to verify data name against rule's data pattern.\n", function_msg_prefix);
+    return ret_val;
+  }
 
   printf("Checking key name pattern.\n\n");
   
   ret_val = _check_name_against_pattern(&rule->key_pattern, key_name);
-  if (ret_val != NDN_SUCCESS) return NDN_TRUST_SCHEMA_KEY_NAME_DID_NOT_MATCH;
+  if (ret_val != NDN_SUCCESS) {
+    printf("%s failed to verify key name against rule's key pattern.\n", function_msg_prefix);
+    return ret_val;
+  }
 
   return 0;
   

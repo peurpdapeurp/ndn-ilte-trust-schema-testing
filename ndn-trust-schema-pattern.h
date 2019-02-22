@@ -24,6 +24,10 @@ typedef struct ndn_trust_schema_pattern {
    * The number of schema components
    */
   uint32_t components_size;
+  /**
+   * The number of subpattern captures in the schema pattern.
+   */
+  uint8_t num_subpattern_captures;
 } ndn_trust_schema_pattern_t;
 
 /**
