@@ -10,9 +10,9 @@
 static const char result_success[] = "SUCCESS";
 static const char result_failure[] = "FAILURE";
 
-/* static ndn_trust_schema_rule_t test_rule_1; */
-/* static char test_rule_data_pattern_string_1[] = "<test><test><test>"; */
-/* static char test_rule_key_pattern_string_1[] = "<test><test><test>"; */
+static ndn_trust_schema_rule_t test_rule_1;
+static char test_rule_data_pattern_string_1[] = "<test><test><test>";
+static char test_rule_key_pattern_string_1[] = "<test><test><test>";
 
 /* static ndn_trust_schema_rule_t test_rule_2; */
 /* static char test_rule_data_pattern_string_2[] = "<test><test>[t.*t]"; */
@@ -26,9 +26,9 @@ static const char result_failure[] = "FAILURE";
 /* static char test_rule_data_pattern_string_4[] = "(<>*)<test>"; */
 /* static char test_rule_key_pattern_string_4[] = "<test>(<>*)<test>"; */
 
-static ndn_trust_schema_rule_t test_rule_5;
-static char test_rule_data_pattern_string_5[] = "(<>*)<test>";
-static char test_rule_key_pattern_string_5[] = "\\0<test>";
+/* static ndn_trust_schema_rule_t test_rule_5; */
+/* static char test_rule_data_pattern_string_5[] = "(<>*)<test>"; */
+/* static char test_rule_key_pattern_string_5[] = "\\0<test>"; */
 
 
 static ndn_name_t test_data_name_1;
@@ -96,14 +96,14 @@ int _initialize_test_objects() {
   /*   return ret_val; */
   /* } */
   
-  /* ret_val = ndn_trust_schema_rule_from_strings(&test_rule_1, */
-  /* 					       test_rule_data_pattern_string_1, sizeof(test_rule_data_pattern_string_1), */
-  /* 					       test_rule_key_pattern_string_1, sizeof(test_rule_key_pattern_string_1)); */
-  /* if (ret_val != NDN_SUCCESS) { */
-  /*   printf("Call to ndn_trust_schema_rule_from_strings failed, error code: %d\n", ret_val); */
-  /*   return ret_val; */
-  /* } */
-  /* printf("\n"); */
+  ret_val = ndn_trust_schema_rule_from_strings(&test_rule_1,
+  					       test_rule_data_pattern_string_1, sizeof(test_rule_data_pattern_string_1),
+  					       test_rule_key_pattern_string_1, sizeof(test_rule_key_pattern_string_1));
+  if (ret_val != NDN_SUCCESS) {
+    printf("Call to ndn_trust_schema_rule_from_strings failed, error code: %d\n", ret_val);
+    return ret_val;
+  }
+  printf("\n");
   /* ret_val = ndn_trust_schema_rule_from_strings(&test_rule_2, */
   /* 					       test_rule_data_pattern_string_2, sizeof(test_rule_data_pattern_string_2), */
   /* 					       test_rule_key_pattern_string_2, sizeof(test_rule_key_pattern_string_2)); */
@@ -128,14 +128,14 @@ int _initialize_test_objects() {
   /*   return ret_val; */
   /* } */
   /* printf("\n"); */
-  ret_val = ndn_trust_schema_rule_from_strings(&test_rule_5,
-  					       test_rule_data_pattern_string_5, sizeof(test_rule_data_pattern_string_5),
-  					       test_rule_key_pattern_string_5, sizeof(test_rule_key_pattern_string_5));
-  if (ret_val != NDN_SUCCESS) {
-    printf("Call to ndn_trust_schema_rule_from_strings failed, error code: %d\n", ret_val);
-    return ret_val;
-  }
-  printf("\n");
+  /* ret_val = ndn_trust_schema_rule_from_strings(&test_rule_5, */
+  /* 					       test_rule_data_pattern_string_5, sizeof(test_rule_data_pattern_string_5), */
+  /* 					       test_rule_key_pattern_string_5, sizeof(test_rule_key_pattern_string_5)); */
+  /* if (ret_val != NDN_SUCCESS) { */
+  /*   printf("Call to ndn_trust_schema_rule_from_strings failed, error code: %d\n", ret_val); */
+  /*   return ret_val; */
+  /* } */
+  /* printf("\n"); */
 
   
   printf("Finished initializing test objects.\n");
@@ -184,10 +184,10 @@ int main() {
     return -1;
   }
   
-  /* run_test(&test_rule_1, */
-  /* 	   test_rule_data_pattern_string_1, test_rule_key_pattern_string_1, */
-  /* 	   &test_data_name_1, test_data_name_string_1, */
-  /* 	   &test_key_name_1, test_key_name_string_1); */
+  run_test(&test_rule_1,
+  	   test_rule_data_pattern_string_1, test_rule_key_pattern_string_1,
+  	   &test_data_name_1, test_data_name_string_1,
+  	   &test_key_name_1, test_key_name_string_1);
 
   /* run_test(&test_rule_1, */
   /* 	   test_rule_data_pattern_string_1, test_rule_key_pattern_string_1, */
@@ -219,10 +219,10 @@ int main() {
   /* 	   &test_data_name_4, test_data_name_string_4, */
   /* 	   &test_key_name_3, test_key_name_string_3); */
 
-  run_test(&test_rule_5,
-  	   test_rule_data_pattern_string_5, test_rule_key_pattern_string_5,
-  	   &test_data_name_1, test_data_name_string_1,
-  	   &test_key_name_1, test_key_name_string_1);
+  /* run_test(&test_rule_5, */
+  /* 	   test_rule_data_pattern_string_5, test_rule_key_pattern_string_5, */
+  /* 	   &test_data_name_1, test_data_name_string_1, */
+  /* 	   &test_key_name_1, test_key_name_string_1); */
 
 
   return 0;
