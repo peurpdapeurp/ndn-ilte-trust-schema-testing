@@ -18,10 +18,7 @@ ndn_trust_schema_rule_from_strings(ndn_trust_schema_rule_t* rule,
 
   for (int i = 0; i < rule->data_pattern.components_size; i++) {
     printf("Type of data pattern's %dth component: ", i);
-    if (rule->data_pattern.components[i].type == NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
-      printf("padding");
-    }
-    else if (rule->data_pattern.components[i].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT) {
+    if (rule->data_pattern.components[i].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT) {
       printf("single wildcard");    
     }
     else if (rule->data_pattern.components[i].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {
@@ -49,10 +46,7 @@ ndn_trust_schema_rule_from_strings(ndn_trust_schema_rule_t* rule,
 
   for (int i = 0; i < rule->key_pattern.components_size; i++) {
     printf("Type of key pattern's %dth component: ", i);
-    if (rule->key_pattern.components[i].type == NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
-      printf("padding");
-    }
-    else if (rule->key_pattern.components[i].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT) {
+    if (rule->key_pattern.components[i].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT) {
       printf("single wildcard");    
     }
     else if (rule->key_pattern.components[i].type == NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT) {

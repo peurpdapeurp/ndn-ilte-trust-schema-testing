@@ -31,16 +31,6 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
   const char function_msg_prefix[] = "In _check_name_against_pattern,";
 
   printf("%s pattern's number of subpattern captures was: %d\n", function_msg_prefix, pattern->num_subpattern_captures);
-  
-  if (pattern->components_size < 2) {
-    return NDN_TRUST_SCHEMA_PATTERN_TOO_SMALL;
-  }
-  if (pattern->components[0].type != NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
-    return NDN_TRUST_SCHEMA_PATTERN_DID_NOT_START_WITH_PADDING_COMPONENT;
-  }
-  if (pattern->components[pattern->components_size-1].type != NDN_TRUST_SCHEMA_PADDING_COMPONENT) {
-    return NDN_TRUST_SCHEMA_PATTERN_DID_NOT_END_WITH_PADDING_COMPONENT;
-  }
 
   // allocate arrays for checking wildcard specializers
   char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  

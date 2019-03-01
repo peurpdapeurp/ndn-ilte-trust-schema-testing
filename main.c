@@ -11,7 +11,7 @@ static const char result_success[] = "SUCCESS";
 static const char result_failure[] = "FAILURE";
 
 static ndn_trust_schema_rule_t test_rule_1;
-static char test_rule_data_pattern_string_1[] = "<test><test><test>";
+static char test_rule_data_pattern_string_1[] = "(<test>)(<test><test>)";
 static char test_rule_key_pattern_string_1[] = "<test><test><test>";
 
 /* static ndn_trust_schema_rule_t test_rule_2; */
@@ -29,7 +29,6 @@ static char test_rule_key_pattern_string_1[] = "<test><test><test>";
 /* static ndn_trust_schema_rule_t test_rule_5; */
 /* static char test_rule_data_pattern_string_5[] = "(<>*)<test>"; */
 /* static char test_rule_key_pattern_string_5[] = "\\0<test>"; */
-
 
 static ndn_name_t test_data_name_1;
 static char test_data_name_string_1[] = "/test/test/test";
@@ -59,7 +58,7 @@ int _initialize_test_objects() {
   printf("\nThis is a test of a potential schematized trust implementation.\n");
   printf("----------------------------------------------------------------\n\n");  
 
-  ret_val = ndn_name_from_string(&test_data_name_1, test_data_name_string_1, sizeof(test_data_name_string_1));
+  ret_val = ndn_name_from_string(&test_data_name_1, test_data_name_string_1, strlen(test_data_name_string_1));
   if (ret_val != NDN_SUCCESS) {
     printf("Call to ndn_name_from_string failed, error code: %d\n", ret_val);
     return ret_val;
@@ -80,7 +79,7 @@ int _initialize_test_objects() {
   /*   return ret_val; */
   /* } */
   
-  ret_val = ndn_name_from_string(&test_key_name_1, test_key_name_string_1, sizeof(test_key_name_string_1));
+  ret_val = ndn_name_from_string(&test_key_name_1, test_key_name_string_1, strlen(test_key_name_string_1));
   if (ret_val != NDN_SUCCESS) {
     printf("Call to ndn_name_from_string failed, error code: %d\n", ret_val);
     return ret_val;
@@ -97,8 +96,8 @@ int _initialize_test_objects() {
   /* } */
   
   ret_val = ndn_trust_schema_rule_from_strings(&test_rule_1,
-  					       test_rule_data_pattern_string_1, sizeof(test_rule_data_pattern_string_1),
-  					       test_rule_key_pattern_string_1, sizeof(test_rule_key_pattern_string_1));
+  					       test_rule_data_pattern_string_1, strlen(test_rule_data_pattern_string_1),
+  					       test_rule_key_pattern_string_1, strlen(test_rule_key_pattern_string_1));
   if (ret_val != NDN_SUCCESS) {
     printf("Call to ndn_trust_schema_rule_from_strings failed, error code: %d\n", ret_val);
     return ret_val;
@@ -184,10 +183,10 @@ int main() {
     return -1;
   }
   
-  run_test(&test_rule_1,
-  	   test_rule_data_pattern_string_1, test_rule_key_pattern_string_1,
-  	   &test_data_name_1, test_data_name_string_1,
-  	   &test_key_name_1, test_key_name_string_1);
+  /* run_test(&test_rule_1, */
+  /* 	   test_rule_data_pattern_string_1, test_rule_key_pattern_string_1, */
+  /* 	   &test_data_name_1, test_data_name_string_1, */
+  /* 	   &test_key_name_1, test_key_name_string_1); */
 
   /* run_test(&test_rule_1, */
   /* 	   test_rule_data_pattern_string_1, test_rule_key_pattern_string_1, */
