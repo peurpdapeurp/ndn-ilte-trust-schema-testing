@@ -68,8 +68,8 @@ void _run_trust_schema_test(trust_schema_test_t *test) {
   ret_val = ndn_trust_schema_rule_from_strings(test->rule,
   					       test->rule_data_pattern_string, test->rule_data_pattern_string_size,
   					       test->rule_key_pattern_string, test->rule_key_pattern_string_size);
-  if (ret_val != NDN_SUCCESS) {
-    print_error(_current_test_name, "_run_trust_schema_test", "ndn_trust_schema_rule_from_strings", ret_val);
+  if (ret_val != test->expected_rule_compilation_result) {
+    printf("In %s, rule compilation result was %d; expected a rule compilation result of %d.\n", _current_test_name, ret_val, test->expected_rule_compilation_result);
     *test->passed = false;
     return;
   }

@@ -1,4 +1,5 @@
 
+
 /*
  * Copyright (C) 2019 Edward Lu
  *
@@ -21,6 +22,8 @@ char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS] = {
   "test_trust_schema_pattern_no_wildcards_match",
   "test_trust_schema_pattern_no_wildcards_mismatch",
   "test_trust_schema_pattern_only_wildcards_match",
+  "test_trust_schema_pattern_wildcard_specializer_match",
+  "test_trust_schema_pattern_wildcard_specializer_mismatch"
 };
 
 bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
@@ -41,6 +44,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_1,
       test_key_name_1_string,
       strlen(test_key_name_1_string),
+      expected_rule_compilation_return_1,
       expected_match_1,
       &trust_schema_test_results[0]
     },
@@ -58,6 +62,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_2,
       test_key_name_2_string,
       strlen(test_key_name_2_string),
+      expected_rule_compilation_return_2,
       expected_match_2,
       &trust_schema_test_results[1]
     },
@@ -75,6 +80,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_3,
       test_key_name_3_string,
       strlen(test_key_name_3_string),
+      expected_rule_compilation_return_3,
       expected_match_3,
       &trust_schema_test_results[2]
     },
@@ -92,6 +98,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_4,
       test_key_name_4_string,
       strlen(test_key_name_4_string),
+      expected_rule_compilation_return_4,
       expected_match_4,
       &trust_schema_test_results[3]
     },
@@ -109,6 +116,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_5,
       test_key_name_5_string,
       strlen(test_key_name_5_string),
+      expected_rule_compilation_return_5,
       expected_match_5,
       &trust_schema_test_results[4]
     },
@@ -126,6 +134,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_6,
       test_key_name_6_string,
       strlen(test_key_name_6_string),
+      expected_rule_compilation_return_6,
       expected_match_6,
       &trust_schema_test_results[5]
     },
@@ -143,6 +152,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_7,
       test_key_name_7_string,
       strlen(test_key_name_7_string),
+      expected_rule_compilation_return_7,
       expected_match_7,
       &trust_schema_test_results[6]
     },
@@ -160,6 +170,7 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_8,
       test_key_name_8_string,
       strlen(test_key_name_8_string),
+      expected_rule_compilation_return_8,
       expected_match_8,
       &trust_schema_test_results[7]
     },
@@ -177,8 +188,45 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_9,
       test_key_name_9_string,
       strlen(test_key_name_9_string),
+      expected_rule_compilation_return_9,
       expected_match_9,
       &trust_schema_test_results[8]
+    },
+    {
+      trust_schema_test_names,
+      9,
+      &test_rule_10,
+      test_rule_10_data_pattern_string,
+      strlen(test_rule_10_data_pattern_string),
+      test_rule_10_key_pattern_string,
+      strlen(test_rule_10_key_pattern_string),
+      &test_data_name_10,
+      test_data_name_10_string,
+      strlen(test_data_name_10_string),
+      &test_key_name_10,
+      test_key_name_10_string,
+      strlen(test_key_name_10_string),
+      expected_rule_compilation_return_10,
+      expected_match_10,
+      &trust_schema_test_results[9]
+    },
+    {
+      trust_schema_test_names,
+      10,
+      &test_rule_11,
+      test_rule_11_data_pattern_string,
+      strlen(test_rule_11_data_pattern_string),
+      test_rule_11_key_pattern_string,
+      strlen(test_rule_11_key_pattern_string),
+      &test_data_name_11,
+      test_data_name_11_string,
+      strlen(test_data_name_11_string),
+      &test_key_name_11,
+      test_key_name_11_string,
+      strlen(test_key_name_11_string),
+      expected_rule_compilation_return_11,
+      expected_match_11,
+      &trust_schema_test_results[10]
     },
 
 };
@@ -218,3 +266,11 @@ ndn_name_t test_key_name_8;
 ndn_trust_schema_rule_t test_rule_9;
 ndn_name_t test_data_name_9;
 ndn_name_t test_key_name_9;
+
+ndn_trust_schema_rule_t test_rule_10;
+ndn_name_t test_data_name_10;
+ndn_name_t test_key_name_10;
+
+ndn_trust_schema_rule_t test_rule_11;
+ndn_name_t test_data_name_11;
+ndn_name_t test_key_name_11;
