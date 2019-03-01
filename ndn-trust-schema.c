@@ -28,7 +28,7 @@ int no_wildcard_sequence_match(const ndn_name_t *n, int nb, int ne, const ndn_tr
 int _index_of(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe) {
   for (int i = nb; i < ne; i++) {
     if (i+pe-pb <= ne &&
-	no_wildcard_sequence_match(n, i, i+pe-pb, p, pb, pe))
+	no_wildcard_sequence_match(n, i, i+pe-pb, p, pb, pe) == 0)
       return i;
   }
   return -1;
@@ -79,8 +79,9 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
     while (i < pe && pattern->components[i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
       i++;
     int j = _index_of(name, nb, ne, pattern, pb, i);
-    if (j == -1)
+    if (j == -1) {
       return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+    }
     nb = j+i-pb;
     pb = i+1;
   }

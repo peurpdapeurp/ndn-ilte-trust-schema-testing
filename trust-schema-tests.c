@@ -81,7 +81,7 @@ void _run_trust_schema_test(trust_schema_test_t *test) {
     *test->passed = false;
     return;
   }
-
+  
   *test->passed = true;
   
 }
