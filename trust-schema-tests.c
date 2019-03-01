@@ -73,6 +73,10 @@ void _run_trust_schema_test(trust_schema_test_t *test) {
     *test->passed = false;
     return;
   }
+  if (test->expected_rule_compilation_result != NDN_SUCCESS) {
+    *test->passed = true;
+    return;
+  }
 
   ret_val = ndn_trust_schema_verify_data_name_key_name_pair(test->rule, test->data_name, test->key_name);
 

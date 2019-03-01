@@ -33,33 +33,52 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
   uint8_t current_subpattern_begin_index = 0;
   uint8_t current_subpattern_end_index = 0;
   const char * current_string = string;
-  
+  int last_type = -1;
+  int current_type = -1;
   // iterate through the schema pattern
   while (current_string - string < size) {
 
     /* printf("Value of current string - string in current while loop iteration: %zd\n", current_string - string); */
     
     int pattern_comp_end_index = -1;
+
+/* #define NDN_TRUST_SCHEMA_PATTERN_COMPONENTS_SIZE 10 */
+/* #define NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT 0x00 */
+/* #define NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT 0x01 */
+/* #define NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE 0x02 */
+/* #define NDN_TRUST_SCHEMA_SUBPATTERN_INDEX 0x03 */
+/* #define NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER 0x05 */
+/* #define NDN_TRUST_SCHEMA_RULE_REF 0x06 */
     
     switch (current_string[0]) {
     case '<':
       pattern_comp_end_index = re_match("^<>\\*", current_string);
       if (pattern_comp_end_index == TINY_REGEX_C_FAIL) {
 	pattern_comp_end_index = re_match(">", current_string);
-	if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+	if (pattern_comp_end_index == TINY_REGEX_C_FAIL)
+	  return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+	else
+	  current_type = (pattern_comp_end_index == 2) ? NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT : NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT;
       }
       else {
+	current_type = NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE;
 	pattern_comp_end_index += 2;
       }
       break;
     case '[':
       pattern_comp_end_index = re_match("]", current_string);
-      if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+      if (pattern_comp_end_index == TINY_REGEX_C_FAIL)
+	return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+      else
+	current_type = NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER;
       break;
     case '\\':
       /* printf("Found a \\ character in pattern being parsed.\n"); */
       pattern_comp_end_index = re_match("[0-9]", current_string);
-      if (pattern_comp_end_index == TINY_REGEX_C_FAIL) return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+      if (pattern_comp_end_index == TINY_REGEX_C_FAIL)
+	return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
+      else
+	current_type = NDN_TRUST_SCHEMA_SUBPATTERN_INDEX;
       break;
     case '(':
       /* printf("Found (, setting should_add_SPB flag.\n"); */
@@ -84,6 +103,12 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
       else
 	return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;
     }
+
+    // do not allow more than one consecutive wildcard name component sequences
+    if (current_type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE &&
+	last_type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
+      return NDN_TRUST_SCHEMA_PATTERN_INVALID_FORMAT;
+    last_type = current_type;
 
     int pattern_comp_string_len = pattern_comp_end_index + 1;
 

@@ -23,7 +23,8 @@ char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS] = {
   "test_trust_schema_pattern_no_wildcards_mismatch",
   "test_trust_schema_pattern_only_wildcards_match",
   "test_trust_schema_pattern_wildcard_specializer_match",
-  "test_trust_schema_pattern_wildcard_specializer_mismatch"
+  "test_trust_schema_pattern_wildcard_specializer_mismatch",
+  "test_trust_schema_pattern_invalid_format_multiple_consecutive_wildcard_sequences",
 };
 
 bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
@@ -228,6 +229,24 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       expected_match_11,
       &trust_schema_test_results[10]
     },
+    {
+      trust_schema_test_names,
+      11,
+      &test_rule_12,
+      test_rule_12_data_pattern_string,
+      strlen(test_rule_12_data_pattern_string),
+      test_rule_12_key_pattern_string,
+      strlen(test_rule_12_key_pattern_string),
+      &test_data_name_12,
+      test_data_name_12_string,
+      strlen(test_data_name_12_string),
+      &test_key_name_12,
+      test_key_name_12_string,
+      strlen(test_key_name_12_string),
+      expected_rule_compilation_return_12,
+      expected_match_12,
+      &trust_schema_test_results[11]
+    },
 
 };
 
@@ -274,3 +293,7 @@ ndn_name_t test_key_name_10;
 ndn_trust_schema_rule_t test_rule_11;
 ndn_name_t test_data_name_11;
 ndn_name_t test_key_name_11;
+
+ndn_trust_schema_rule_t test_rule_12;
+ndn_name_t test_data_name_12;
+ndn_name_t test_key_name_12;

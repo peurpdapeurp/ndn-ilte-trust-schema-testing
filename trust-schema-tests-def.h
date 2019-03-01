@@ -20,7 +20,7 @@
 #include "../ndn-lite/encode/name.h"
 #include "ndn-trust-schema-rule.h"
 
-#define TRUST_SCHEMA_NUM_TESTS 11
+#define TRUST_SCHEMA_NUM_TESTS 12
 
 extern char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS];
 
@@ -137,5 +137,16 @@ extern ndn_name_t test_key_name_11;
 #define test_key_name_11_string "/apple"
 #define expected_rule_compilation_return_11 (NDN_SUCCESS)
 #define expected_match_11 false
+
+extern ndn_trust_schema_rule_t test_rule_12;
+#define test_rule_12_data_pattern_string "<>*<>*<>*"
+#define test_rule_12_key_pattern_string "<apple>"
+extern ndn_name_t test_data_name_12;
+#define test_data_name_12_string "/apple"
+extern ndn_name_t test_key_name_12;
+#define test_key_name_12_string "/apple"
+#define expected_rule_compilation_return_12 (NDN_TRUST_SCHEMA_PATTERN_INVALID_FORMAT)
+#define expected_match_12 false
+
 
 #endif // TRUST_SCHEMA_TESTS_DEF_H
