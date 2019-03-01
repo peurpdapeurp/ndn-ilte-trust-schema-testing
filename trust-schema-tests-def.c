@@ -13,6 +13,7 @@
 
 char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS] = {
   "test_trust_schema_1",
+  "test_trust_schema_2",
 };
 
 bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
@@ -33,12 +34,33 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       &test_key_name_1,
       test_key_name_1_string,
       strlen(test_key_name_1_string),
+      true,
       &trust_schema_test_results[0]
     },
+    {
+      trust_schema_test_names,
+      1,
+      &test_rule_2,
+      test_rule_2_data_pattern_string,
+      strlen(test_rule_2_data_pattern_string),
+      test_rule_2_key_pattern_string,
+      strlen(test_rule_2_key_pattern_string),
+      &test_data_name_2,
+      test_data_name_2_string,
+      strlen(test_data_name_2_string),
+      &test_key_name_2,
+      test_key_name_2_string,
+      strlen(test_key_name_2_string),
+      false,
+      &trust_schema_test_results[1]
+    },
+
 };
 
 ndn_trust_schema_rule_t test_rule_1;
-
 ndn_name_t test_data_name_1;
-
 ndn_name_t test_key_name_1;
+
+ndn_trust_schema_rule_t test_rule_2;
+ndn_name_t test_data_name_2;
+ndn_name_t test_key_name_2;

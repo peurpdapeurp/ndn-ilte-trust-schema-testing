@@ -19,7 +19,7 @@
 #include "../ndn-lite/encode/name.h"
 #include "ndn-trust-schema-rule.h"
 
-#define TRUST_SCHEMA_NUM_TESTS 1
+#define TRUST_SCHEMA_NUM_TESTS 2
 
 extern char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS];
 
@@ -28,14 +28,19 @@ extern bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
 extern trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS];
 
 extern ndn_trust_schema_rule_t test_rule_1;
-#define test_rule_1_data_pattern_string "<test><test><test>"
-#define test_rule_1_key_pattern_string "<test><test><test>"
-
+#define test_rule_1_data_pattern_string "<apple>"
+#define test_rule_1_key_pattern_string "<banana>"
 extern ndn_name_t test_data_name_1;
-#define test_data_name_1_string "/test/test/test"
-
+#define test_data_name_1_string "/apple"
 extern ndn_name_t test_key_name_1;
-#define test_key_name_1_string "/test/test/test"
+#define test_key_name_1_string "/banana"
 
+extern ndn_trust_schema_rule_t test_rule_2;
+#define test_rule_2_data_pattern_string "<apple>"
+#define test_rule_2_key_pattern_string "<banana>"
+extern ndn_name_t test_data_name_2;
+#define test_data_name_2_string "/banana"
+extern ndn_name_t test_key_name_2;
+#define test_key_name_2_string "/apple"
 
 #endif // TRUST_SCHEMA_TESTS_DEF_H
