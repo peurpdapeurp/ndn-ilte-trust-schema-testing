@@ -9,6 +9,7 @@
 
 #include "../ndn-lite/ndn-constants.h"
 #include "../ndn-lite/ndn-error-code.h"
+#include "../ndn-lite/encode/name-component.h"
 
 #include "ndn-trust-schema-common.h"
 
@@ -113,5 +114,16 @@ _probe_trust_schema_pattern_component_type(const char* string, uint32_t size)
  */
 int
 ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_component_t* component, const char* string, uint32_t size);
+
+/**
+ * Compare a trust schema pattern component and a name component. This function will return false for any pattern components that
+ *   require extra context to be matched properly (i.e., subpattern indexes).
+ * @param pattern_component. Input. The pattern component for comparison.
+ * @param name_component. Input. The name component for comparison.
+ * @return 0 if the pattern component matches the name component.
+ */
+int
+ndn_trust_schema_pattern_component_compare(const ndn_trust_schema_pattern_component_t *pattern_component, const name_component_t *name_component);
+
 
 #endif // NDN_TRUST_SCHEMA_PATTERN_COMPONENT_H

@@ -4,6 +4,7 @@
 #include "../ndn-lite/encode/name.h"
 #include "../ndn-lite/ndn-error-code.h"
 #include "ndn-trust-schema.h"
+#include "ndn-trust-schema-pattern-component.h"
 
 #include "tiny-regex-c/re.h"
 
@@ -11,7 +12,7 @@ static const char result_success[] = "SUCCESS";
 static const char result_failure[] = "FAILURE";
 
 static ndn_trust_schema_rule_t test_rule_1;
-static char test_rule_data_pattern_string_1[] = "(<test>)(<test><test>)";
+static char test_rule_data_pattern_string_1[] = "<test><><>*\\0[.*]";
 static char test_rule_key_pattern_string_1[] = "<test><test><test>";
 
 /* static ndn_trust_schema_rule_t test_rule_2; */
@@ -31,7 +32,7 @@ static char test_rule_key_pattern_string_1[] = "<test><test><test>";
 /* static char test_rule_key_pattern_string_5[] = "\\0<test>"; */
 
 static ndn_name_t test_data_name_1;
-static char test_data_name_string_1[] = "/test/test/test";
+static char test_data_name_string_1[] = "/test/fail/test";
 
 /* static ndn_name_t test_data_name_2; */
 /* static char test_data_name_string_2[] = "/test/test/fail"; */
@@ -222,7 +223,6 @@ int main() {
   /* 	   test_rule_data_pattern_string_5, test_rule_key_pattern_string_5, */
   /* 	   &test_data_name_1, test_data_name_string_1, */
   /* 	   &test_key_name_1, test_key_name_string_1); */
-
-
+  
   return 0;
 }

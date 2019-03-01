@@ -74,3 +74,34 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
   return 0;
   
 }
+
+int
+ndn_trust_schema_pattern_component_compare(const ndn_trust_schema_pattern_component_t *pattern_component, const name_component_t *name_component) {
+
+  // allocate arrays for checking wildcard specializers
+  char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  
+  char temp_name_component_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];
+  
+  switch (pattern_component->type) {
+  case NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT:
+    return (memcmp(pattern_component->value, name_component->value, pattern_component->size) == 0 &&
+	    pattern_component->size == name_component->size) ? 0 : -1;	      
+  case NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER:
+    memcpy(temp_wildcard_specializer_string_arr, pattern_component->value, pattern_component->size);
+    temp_wildcard_specializer_string_arr[pattern_component->size] = '\0';
+    memcpy(temp_name_component_string_arr, name_component->value, name_component->size);
+    temp_name_component_string_arr[name_component->size] = '\0';
+    int ret_val = re_match(temp_wildcard_specializer_string_arr, temp_name_component_string_arr);
+    return (ret_val != TINY_REGEX_C_FAIL) ? 0 : -1;
+  case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT:
+  case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE:
+    return 0;
+  case NDN_TRUST_SCHEMA_SUBPATTERN_INDEX:
+  case NDN_TRUST_SCHEMA_RULE_REF:
+    return -1;
+  default:
+    return -1;
+  }
+  return -1;
+
+}

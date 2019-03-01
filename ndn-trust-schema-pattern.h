@@ -60,5 +60,23 @@ ndn_trust_schema_pattern_append_component(ndn_trust_schema_pattern_t *pattern, c
 int
 ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const char* string, uint32_t size);
 
+/**
+ * Find the first index in a trust schema pattern of a particular type. 
+ * @param pattern. Input. The NDN Trust Schema pattern to be parsed.
+ * @param type. Input. The pattern component type to search for.
+ * @return Index of first pattern component of given type if successfully found, -1 otherwise.
+ */
+int
+index_of_pattern_component_type(const ndn_trust_schema_pattern_t* pattern, int type);
+
+/**
+ * Find the last index in a trust schema pattern of a particular type. 
+ * @param pattern. Input. The NDN Trust Schema pattern to be parsed.
+ * @param type. Input. The pattern component type to search for.
+ * @return Index of last pattern component of given type if successfully found, -1 otherwise.
+ */
+int
+last_index_of_pattern_component_type(const ndn_trust_schema_pattern_t* pattern, int type);
+
 
 #endif // NDN_TRUST_SCHEMA_PATTERN_H

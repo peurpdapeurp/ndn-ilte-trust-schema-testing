@@ -14,12 +14,25 @@ typedef struct {
   int SPB_ni;
 } subpattern_idx;
 
-typedef struct {
-  // the non-<>*-pattern-component subsequence's beginning pattern index
-  int NSSB_pi;
-  // the non-<>*-pattern-component subsequence's ending pattern index
-  int NSSE_pi;
-} non_star_sub_seq_idx;
+bool _no_star_match(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe) {
+    if (ne-nb != pe-pb)
+      return false;
+    for (int i = 0; i < ne-nb; i++) {
+      if (p->components[pb+i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT &&
+	  ndn_trust_schema_pattern_component_compare(&p->components[pb+i], &n->components[nb+i]) != 0)
+	return false;
+    }
+    return true;
+}
+
+int _index_of(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe) {
+  for (int i = nb; i < ne; i++) {
+    if (i+ne-nb <= ne &&
+	_no_star_match(n, i, i+pe-pb, p, pb, pe))
+      return i;
+  }
+  return -1;
+}
 
 int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const ndn_name_t* name,
 				subpattern_idx *subpattern_idxs,
@@ -41,12 +54,44 @@ int _check_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const
   int pat_len = pattern->components_size - 2;
   int name_len = name->components_size;
 
-  
-  
-  if (pat_len == 2 && name_len == 0) {
+  if (pat_len == 0 && name_len == 0) {
     return NDN_SUCCESS;
   }
+  
+  int pb = index_of_pattern_component_type(pattern, NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE);
+  
+  if (pb < 0) {
+    return _no_star_match(name, 0, name->components_size, pattern, 0, pattern->components_size);
+  }
 
+  int pe = last_index_of_pattern_component_type(pattern, NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)+1;
+  int nb = pb;
+  int ne = name->components_size-(pattern->components_size-pe);
+
+  if (nb > ne) {
+    return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+  }
+  if (!_no_star_match(name, 0, nb, pattern, 0, pb) ||
+      !_no_star_match(name, ne, name->components_size, pattern, pe, pattern->components_size)) {
+    return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+  }
+
+  for (int i = pb; i < pe; i++) {
+    while (i < pe && pattern->components[i].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
+      i++;
+      pb = i;
+    }
+    if (i == pe)
+      return NDN_SUCCESS;
+    while (i < pe && pattern->components[i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
+      i++;
+    int j = _index_of(name, nb, ne, pattern, pb, i);
+    if (j == -1)
+      return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+    nb = j+i-pb;
+    pb = i+1;
+  }
+  return NDN_SUCCESS;
 }
 
 int

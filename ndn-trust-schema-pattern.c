@@ -126,3 +126,33 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
   return 0;
   
 }
+
+int
+index_of_pattern_component_type(const ndn_trust_schema_pattern_t* pattern, int type) {
+
+  if (pattern->components_size == 0)
+    return -1;
+
+  for (int i = 0; i < pattern->components_size; i++) {
+    if (pattern->components[i].type == type)
+      return i;
+  }
+
+  return -1;
+  
+}
+
+int
+last_index_of_pattern_component_type(const ndn_trust_schema_pattern_t* pattern, int type) {
+
+  if (pattern->components_size == 0)
+    return -1;
+
+  for (int i = pattern->components_size-1; i >= 0; i--) {
+    if (pattern->components[i].type == type)
+      return i;
+  }
+
+  return -1;
+  
+}

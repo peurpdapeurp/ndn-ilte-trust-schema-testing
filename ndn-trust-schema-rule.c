@@ -30,8 +30,11 @@ ndn_trust_schema_rule_from_strings(ndn_trust_schema_rule_t* rule,
     else if (rule->data_pattern.components[i].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
       printf("wildcard sequence");
     }
-    else if (rule->key_pattern.components[i].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX) {
+    else if (rule->data_pattern.components[i].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX) {
       printf("subpattern index");
+    }
+    else {
+      printf("unrecognized type: %d", rule->data_pattern.components[i].type);
     }
     printf("\n");
     
@@ -60,6 +63,9 @@ ndn_trust_schema_rule_from_strings(ndn_trust_schema_rule_t* rule,
     }
     else if (rule->key_pattern.components[i].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX) {
       printf("subpattern index");
+    }
+    else {
+      printf("unrecognized type: %d", rule->data_pattern.components[i].type);
     }
     printf("\n");
     
