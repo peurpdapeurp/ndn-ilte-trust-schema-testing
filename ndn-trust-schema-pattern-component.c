@@ -77,7 +77,7 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
 
 int
 ndn_trust_schema_pattern_component_compare(const ndn_trust_schema_pattern_component_t *pattern_component, const name_component_t *name_component) {
-
+  
   // allocate arrays for checking wildcard specializers
   char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  
   char temp_name_component_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];

@@ -6,7 +6,11 @@ SOURCES_C := \
 	ndn-trust-schema.c \
 	ndn-trust-schema-rule.c \
 	ndn-trust-schema-pattern.c \
-	ndn-trust-schema-pattern-component.c
+	ndn-trust-schema-pattern-component.c \
+	trust-schema-tests-def.c \
+	trust-schema-tests.c \
+	../../riot-branch/ndn-riot-tests/test-helpers.c \
+	../../riot-branch/ndn-riot-tests/print-helpers.c \
 
 default:
 	gcc -o schematized_trust_test main.c $(SOURCES_C)

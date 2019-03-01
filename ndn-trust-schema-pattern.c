@@ -7,6 +7,9 @@
 int
 ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const char* string, uint32_t size) {
 
+  if (string[size-1] == '\0')
+    size--;
+
   printf("Converting this ndn trust schema pattern: %.*s\n", size, string);
   printf("---\n\n");
   
@@ -30,13 +33,14 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
   uint8_t current_subpattern_begin_index = 0;
   uint8_t current_subpattern_end_index = 0;
   const char * current_string = string;
+  
   // iterate through the schema pattern
   while (current_string - string < size) {
 
     printf("Value of current string - string in current while loop iteration: %zd\n", current_string - string);
     
     int pattern_comp_end_index = -1;
-
+    
     switch (current_string[0]) {
     case '<':
       pattern_comp_end_index = re_match("^<>\\*", current_string);
