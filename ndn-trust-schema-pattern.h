@@ -28,6 +28,10 @@ typedef struct ndn_trust_schema_pattern {
    * The number of subpattern captures in the schema pattern.
    */
   uint8_t num_subpattern_captures;
+  /**
+   * The number of subpattern indexes in the schema pattern.
+   */
+  uint8_t num_subpattern_indexes;
 } ndn_trust_schema_pattern_t;
 
 /**

@@ -42,7 +42,7 @@ bool run_trust_schema_tests(void) {
 void _run_trust_schema_test(trust_schema_test_t *test) {
 
   _current_test_name = test->test_names[test->test_name_index];
-  
+
   int ret_val = -1;
 
   printf("Running trust schema test for following parameters:\n");

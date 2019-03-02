@@ -25,7 +25,7 @@ int no_wildcard_sequence_match_data_name(const ndn_name_t *n, int nb, int ne, co
     if (p->components[pb+i].subpattern_info >> 6 & NDN_TRUST_SCHEMA_SUBPATTERN_BEGIN_ONLY)
       subpattern_idxs[p->components[pb+i].subpattern_info & 0x3F].SPB_ni = nb+i;
     if (p->components[pb+i].subpattern_info >> 6 & NDN_TRUST_SCHEMA_SUBPATTERN_END_ONLY)
-      subpattern_idxs[p->components[pb+i].subpattern_info & 0x3F].SPE_ni = nb+i;
+      subpattern_idxs[p->components[pb+i].subpattern_info & 0x3F].SPE_ni = nb+i+1;
   }
   return NDN_SUCCESS;
 }
@@ -35,28 +35,35 @@ int _index_of_key_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_sche
 
 int no_wildcard_sequence_match_key_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe,
 					const subpattern_idx *subpattern_idxs, int num_subpattern_capture, const ndn_name_t *subpattern_name) {
-  if (ne-nb != pe-pb)
+  if (p->num_subpattern_indexes == 0 && ne-nb != pe-pb)
     return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
-  for (int i = 0; i < ne-nb; i++) {
-    if (p->components[pb+i].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX) {
-      printf("In no_wildcard_sequence_match_key_name, found subpattern index pattern component with value: %d\n",
-	     (int) *p->components[pb+i].value);
-      printf("Arguments passed to ndn_name_compare_sub_names: lhs_b: %d, lhs_e: %d, rhs_b: %d, rhs_e: %d\n",
-	     nb, ne, subpattern_idxs[(int) *p->components[pb+i].value].SPB_ni, subpattern_idxs[(int) *p->components[pb+i].value].SPE_ni+1);
+  int pattern_real_length = 0;
+  int SPB_ni = -1, SPE_ni = -1;
+  int i = 0, j = 0;
+  while (i < ne-nb && j < pe-pb) {
+    if (p->components[pb+j].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX) {
+      SPB_ni = subpattern_idxs[(int) *p->components[pb+j].value].SPB_ni;
+      SPE_ni = subpattern_idxs[(int) *p->components[pb+j].value].SPE_ni;
+      if (ndn_name_compare_sub_names(n, nb+i, nb+i+SPE_ni-SPB_ni, subpattern_name, SPB_ni, SPE_ni) != 0) {
+	return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+      }
+      pattern_real_length += SPE_ni - SPB_ni;
+      i += pattern_real_length;
+      j++;
     }
-    if (p->components[pb+i].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX &&
-    	ndn_name_compare_sub_names(n, nb, ne,
-				   subpattern_name,
-				   subpattern_idxs[(int) *p->components[pb+i].value].SPB_ni,
-				   subpattern_idxs[(int) *p->components[pb+i].value].SPE_ni+1) != 0) {
-      printf("Found a subpattern index reference that didn't match.\n");
+    else if (p->components[pb+j].type != NDN_TRUST_SCHEMA_SUBPATTERN_INDEX &&
+	     p->components[pb+j].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT &&
+	ndn_trust_schema_pattern_component_compare(&p->components[pb+j], &n->components[nb+i]) != 0)
       return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+    else {
+      pattern_real_length++;
+      i++;
+      j++;
     }
-    else if (p->components[pb+i].type != NDN_TRUST_SCHEMA_SUBPATTERN_INDEX &&
-	     p->components[pb+i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT &&
-	ndn_trust_schema_pattern_component_compare(&p->components[pb+i], &n->components[nb+i]) != 0)
-      return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
   }
+  if (j < pe-pb || i < ne-nb)
+    return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+  
   return NDN_SUCCESS;
 }
 
@@ -84,10 +91,6 @@ int _check_data_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, 
 				     subpattern_idx *subpattern_idxs,
 				     size_t num_subpattern_captures) {
 
-  const char function_msg_prefix[] = "In _check_data_name_against_pattern,";
-
-  printf("%s pattern's number of subpattern captures was: %d\n", function_msg_prefix, pattern->num_subpattern_captures);
-
   // allocate arrays for checking wildcard specializers
   char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  
   char temp_name_component_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];
@@ -114,18 +117,22 @@ int _check_data_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, 
     return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
 
   bool found_SPE = false;
+  int last_SPE_pattern_idx = -1;
   for (int i = pb; i < pe; i++) {
     while (i < pe && pattern->components[i].type == NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE) {
+      if (pattern->components[i].subpattern_info >> 6 & NDN_TRUST_SCHEMA_SUBPATTERN_BEGIN_ONLY) {
+	subpattern_idxs[pattern->components[i].subpattern_info & 0x3F].SPB_ni = nb;
+      }
+      if (pattern->components[i].subpattern_info >> 6 & NDN_TRUST_SCHEMA_SUBPATTERN_END_ONLY) {
+	found_SPE = true;
+	last_SPE_pattern_idx = i;
+      }
       i++;
       pb = i;
-      if (pattern->components[i].subpattern_info >> 6 & NDN_TRUST_SCHEMA_SUBPATTERN_BEGIN_ONLY)
-	subpattern_idxs[pattern->components[i].subpattern_info & 0x3F].SPB_ni = nb;
-      if (pattern->components[i].subpattern_info >> 6 & NDN_TRUST_SCHEMA_SUBPATTERN_END_ONLY)
-	found_SPE = true;
     }
     if (i == pe) {
       if (found_SPE)
-	subpattern_idxs[pattern->components[pb].subpattern_info & 0x3F].SPE_ni = ne;
+	subpattern_idxs[pattern->components[last_SPE_pattern_idx].subpattern_info & 0x3F].SPE_ni = ne;
       return NDN_SUCCESS;
     }
     while (i < pe && pattern->components[i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
@@ -135,7 +142,7 @@ int _check_data_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, 
       return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
     }
     if (found_SPE) {
-      subpattern_idxs[pattern->components[pb].subpattern_info & 0x3F].SPE_ni = j;
+      subpattern_idxs[pattern->components[last_SPE_pattern_idx].subpattern_info & 0x3F].SPE_ni = j;
       found_SPE = false;
     }
     nb = j+i-pb;
@@ -149,10 +156,6 @@ int _check_key_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, c
 				    const subpattern_idx *subpattern_idxs,
 				    const ndn_name_t *subpattern_name,
 				    size_t num_subpattern_captures) {
-
-  const char function_msg_prefix[] = "In _check_key_name_against_pattern,";
-
-  printf("%s pattern's number of subpattern captures was: %d\n", function_msg_prefix, pattern->num_subpattern_captures);
 
   // allocate arrays for checking wildcard specializers
   char temp_wildcard_specializer_string_arr[NDN_TRUST_SCHEMA_PATTERN_COMPONENT_STRING_MAX_SIZE];  
@@ -205,40 +208,17 @@ int
 ndn_trust_schema_verify_data_name_key_name_pair(const ndn_trust_schema_rule_t* rule, const ndn_name_t* data_name, const ndn_name_t* key_name) {
 
   int ret_val = -1;
-  
-  const char function_msg_prefix[] = "In ndn_trust_schema_verify_key_name, ";
-
-  printf("Checking data name pattern.\n\n");
 
   subpattern_idx data_name_subpattern_idxs[rule->data_pattern.num_subpattern_captures];
   ret_val = _check_data_name_against_pattern(&rule->data_pattern, data_name,
 					data_name_subpattern_idxs, rule->data_pattern.num_subpattern_captures);
   if (ret_val != NDN_SUCCESS) {
-    printf("%s failed to verify data name against rule's data pattern.\n", function_msg_prefix);
     return ret_val;
   }
 
-  printf("After checking data name pattern, contents of subpattern index information of data name.\n");
-  printf("Number of subpattern captures in data name: %d\n", rule->data_pattern.num_subpattern_captures);
-  if (rule->data_pattern.num_subpattern_captures > 0) {
-    for (int i = 0; i < rule->data_pattern.num_subpattern_captures; i++) {
-      printf("Subpattern capture index %d indexes: begin index %d, end index %d\n",
-	     i, data_name_subpattern_idxs[i].SPB_ni, data_name_subpattern_idxs[i].SPE_ni);
-      printf("Subpattern capture name value: \n");
-      for (int j = data_name_subpattern_idxs[i].SPB_ni; j < data_name_subpattern_idxs[i].SPE_ni+1; j++) {
-	printf("/%.*s", data_name->components[j].size, data_name->components[j].value);
-      }
-      printf("\n");
-    }
-  }
-  printf("\n");
-  
-  printf("Checking key name pattern.\n\n");
-  
   ret_val = _check_key_name_against_pattern(&rule->key_pattern, key_name, data_name_subpattern_idxs,
 					    data_name, rule->data_pattern.num_subpattern_captures);
   if (ret_val != NDN_SUCCESS) {
-    printf("%s failed to verify key name against rule's key pattern.\n", function_msg_prefix);
     return ret_val;
   }
 
