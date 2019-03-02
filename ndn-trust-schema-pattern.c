@@ -41,15 +41,6 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
     /* printf("Value of current string - string in current while loop iteration: %zd\n", current_string - string); */
     
     int pattern_comp_end_index = -1;
-
-/* #define NDN_TRUST_SCHEMA_PATTERN_COMPONENTS_SIZE 10 */
-/* #define NDN_TRUST_SCHEMA_SINGLE_NAME_COMPONENT 0x00 */
-/* #define NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT 0x01 */
-/* #define NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE 0x02 */
-/* #define NDN_TRUST_SCHEMA_SUBPATTERN_INDEX 0x03 */
-/* #define NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER 0x05 */
-/* #define NDN_TRUST_SCHEMA_RULE_REF 0x06 */
-    
     switch (current_string[0]) {
     case '<':
       pattern_comp_end_index = re_match("^<>\\*", current_string);
@@ -121,7 +112,7 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
       /* printf("Found that should_add_SPB flag was set when appending a component, setting subpattern_info field of component being appended accordingly...\n");	     */
       // set the current pattern component's subpattern info to indicate that it was the beginning of a subpattern
       component.subpattern_info |=
-	(NDN_TRUST_SCHEMA_SUBPATTERN_BEGIN_ONLY << 6) | (current_subpattern_begin_index << 3);
+	(NDN_TRUST_SCHEMA_SUBPATTERN_BEGIN_ONLY << 6) | (current_subpattern_begin_index);
       current_subpattern_begin_index++;
       /* printf("Found (, value of current pattern components subpattern info: %d\n", pattern->components[pattern->components_size].subpattern_info); */
       if (current_subpattern_begin_index + 1 > NDN_TRUST_SCHEMA_MAX_SUBPATTERN_MATCHES) {
@@ -138,13 +129,13 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
 
   }
 
-  /* printf("After while loop...\n"); */
+  printf("After while loop...\n");
 
-  /* printf("Value of all subpattern infos for entire pattern: \n"); */
-  /* for (int i = 0; i < pattern->components_size; i++) { */
-  /*   printf("Type of pattern component %d: %d\n", i, pattern->components[i].type); */
-  /*   printf("Subpattern info of pattern component %d: %d\n", i, pattern->components[i].subpattern_info); */
-  /* } */
+  printf("Value of all subpattern infos for entire pattern: \n");
+  for (int i = 0; i < pattern->components_size; i++) {
+    printf("Type of pattern component %d: %d\n", i, pattern->components[i].type);
+    printf("Subpattern info of pattern component %d: %d\n", i, pattern->components[i].subpattern_info);
+  }
 
   if (current_subpattern_begin_index != current_subpattern_end_index) {
     return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_PARSING_ERROR;

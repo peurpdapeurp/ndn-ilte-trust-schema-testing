@@ -1,5 +1,4 @@
 
-
 /*
  * Copyright (C) 2019 Edward Lu
  *
@@ -25,6 +24,7 @@ char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS] = {
   "test_trust_schema_pattern_wildcard_specializer_match",
   "test_trust_schema_pattern_wildcard_specializer_mismatch",
   "test_trust_schema_pattern_invalid_format_multiple_consecutive_wildcard_sequences",
+  "test_trust_schema_pattern_single_subpattern",
 };
 
 bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
@@ -247,7 +247,24 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       expected_match_12,
       &trust_schema_test_results[11]
     },
-
+    {
+      trust_schema_test_names,
+      12,
+      &test_rule_13,
+      test_rule_13_data_pattern_string,
+      strlen(test_rule_13_data_pattern_string),
+      test_rule_13_key_pattern_string,
+      strlen(test_rule_13_key_pattern_string),
+      &test_data_name_13,
+      test_data_name_13_string,
+      strlen(test_data_name_13_string),
+      &test_key_name_13,
+      test_key_name_13_string,
+      strlen(test_key_name_13_string),
+      expected_rule_compilation_return_13,
+      expected_match_13,
+      &trust_schema_test_results[12]
+    },
 };
 
 ndn_trust_schema_rule_t test_rule_1;
@@ -297,3 +314,7 @@ ndn_name_t test_key_name_11;
 ndn_trust_schema_rule_t test_rule_12;
 ndn_name_t test_data_name_12;
 ndn_name_t test_key_name_12;
+
+ndn_trust_schema_rule_t test_rule_13;
+ndn_name_t test_data_name_13;
+ndn_name_t test_key_name_13;
