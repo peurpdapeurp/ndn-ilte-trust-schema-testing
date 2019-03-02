@@ -30,10 +30,11 @@ char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS] = {
   "test_trust_schema_pattern_multiple_subpatterns_mismatch",
   "test_trust_schema_pattern_empty_subpattern_match",
   "test_trust_schema_pattern_empty_subpattern_mismatch",
+  "test_trust_schema_pattern_real_length_exceeds_name_length",
+  "test_trust_schema_name_length_exceeds_pattern_real_length",
 };
 
 bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
-
 
 trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
     {
@@ -359,5 +360,41 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       expected_rule_compilation_return_17,
       expected_match_17,
       &trust_schema_test_results[17]
+    },
+    {
+      trust_schema_test_names,
+      18,
+      &test_rule_18,
+      test_rule_18_data_pattern_string,
+      strlen(test_rule_18_data_pattern_string),
+      test_rule_18_key_pattern_string,
+      strlen(test_rule_18_key_pattern_string),
+      &test_data_name_18,
+      test_data_name_18_string,
+      strlen(test_data_name_18_string),
+      &test_key_name_18,
+      test_key_name_18_string,
+      strlen(test_key_name_18_string),
+      expected_rule_compilation_return_18,
+      expected_match_18,
+      &trust_schema_test_results[18]
+    },
+    {
+      trust_schema_test_names,
+      19,
+      &test_rule_19,
+      test_rule_19_data_pattern_string,
+      strlen(test_rule_19_data_pattern_string),
+      test_rule_19_key_pattern_string,
+      strlen(test_rule_19_key_pattern_string),
+      &test_data_name_19,
+      test_data_name_19_string,
+      strlen(test_data_name_19_string),
+      &test_key_name_19,
+      test_key_name_19_string,
+      strlen(test_key_name_19_string),
+      expected_rule_compilation_return_19,
+      expected_match_19,
+      &trust_schema_test_results[19]
     },
 };
