@@ -45,7 +45,7 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
   case NDN_TRUST_SCHEMA_SUBPATTERN_INDEX:
     /* printf("%s found a subpattern index name component.\n", function_msg_prefix); */
     component->type = type;
-    memcpy(component->value, string+1, size-1);
+    *component->value = ((int) string[1]) - '0';
     component->size = 1;
     /* printf("Value of subpattern index found: %d\n", (int) *component->value); */
     break;

@@ -42,9 +42,6 @@ bool run_trust_schema_tests(void) {
 void _run_trust_schema_test(trust_schema_test_t *test) {
 
   _current_test_name = test->test_names[test->test_name_index];
-
-  if (strcmp(_current_test_name, "test_trust_schema_pattern_single_subpattern") != 0)
-    return;
   
   int ret_val = -1;
 
@@ -83,8 +80,8 @@ void _run_trust_schema_test(trust_schema_test_t *test) {
 
   ret_val = ndn_trust_schema_verify_data_name_key_name_pair(test->rule, test->data_name, test->key_name);
 
-  if ((ret_val == NDN_SUCCESS) != test->expected_match_result) {
-    printf("In %s, match result was %d; expected a match result of %d.\n", _current_test_name, (ret_val == NDN_SUCCESS), test->expected_match_result);
+  if (ret_val != test->expected_match_result) {
+    printf("In %s, match result was %d; expected a match result of %d.\n", _current_test_name, ret_val, test->expected_match_result);
     *test->passed = false;
     return;
   }

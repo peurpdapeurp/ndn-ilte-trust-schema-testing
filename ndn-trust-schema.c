@@ -30,11 +30,30 @@ int no_wildcard_sequence_match_data_name(const ndn_name_t *n, int nb, int ne, co
   return NDN_SUCCESS;
 }
 
-int no_wildcard_sequence_match_key_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe) {
+int _index_of_key_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe,
+		       const subpattern_idx *subpattern_idxs, int num_subpattern_captures, const ndn_name_t *subpattern_name);
+
+int no_wildcard_sequence_match_key_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe,
+					const subpattern_idx *subpattern_idxs, int num_subpattern_capture, const ndn_name_t *subpattern_name) {
   if (ne-nb != pe-pb)
     return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
   for (int i = 0; i < ne-nb; i++) {
-    if (p->components[pb+i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT &&
+    if (p->components[pb+i].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX) {
+      printf("In no_wildcard_sequence_match_key_name, found subpattern index pattern component with value: %d\n",
+	     (int) *p->components[pb+i].value);
+      printf("Arguments passed to ndn_name_compare_sub_names: lhs_b: %d, lhs_e: %d, rhs_b: %d, rhs_e: %d\n",
+	     nb, ne, subpattern_idxs[(int) *p->components[pb+i].value].SPB_ni, subpattern_idxs[(int) *p->components[pb+i].value].SPE_ni+1);
+    }
+    if (p->components[pb+i].type == NDN_TRUST_SCHEMA_SUBPATTERN_INDEX &&
+    	ndn_name_compare_sub_names(n, nb, ne,
+				   subpattern_name,
+				   subpattern_idxs[(int) *p->components[pb+i].value].SPB_ni,
+				   subpattern_idxs[(int) *p->components[pb+i].value].SPE_ni+1) != 0) {
+      printf("Found a subpattern index reference that didn't match.\n");
+      return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
+    }
+    else if (p->components[pb+i].type != NDN_TRUST_SCHEMA_SUBPATTERN_INDEX &&
+	     p->components[pb+i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT &&
 	ndn_trust_schema_pattern_component_compare(&p->components[pb+i], &n->components[nb+i]) != 0)
       return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
   }
@@ -51,10 +70,11 @@ int _index_of_data_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_sch
   return -1;
 }
 
-int _index_of_key_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe) {
+int _index_of_key_name(const ndn_name_t *n, int nb, int ne, const ndn_trust_schema_pattern_t *p, int pb, int pe,
+		       const subpattern_idx *subpattern_idxs, int num_subpattern_captures, const ndn_name_t *subpattern_name) {
   for (int i = nb; i < ne; i++) {
     if (i+pe-pb <= ne &&
-	no_wildcard_sequence_match_key_name(n, i, i+pe-pb, p, pb, pe) == 0)
+	no_wildcard_sequence_match_key_name(n, i, i+pe-pb, p, pb, pe, subpattern_idxs, num_subpattern_captures, subpattern_name) == 0)
       return i;
   }
   return -1;
@@ -122,6 +142,7 @@ int _check_data_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, 
     pb = i+1;
   }
   return NDN_SUCCESS;
+  
 }
 
 int _check_key_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, const ndn_name_t* name,
@@ -144,7 +165,8 @@ int _check_key_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, c
   int pb = index_of_pattern_component_type(pattern, NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE);
   
   if (pb < 0) {
-    return no_wildcard_sequence_match_key_name(name, 0, name->components_size, pattern, 0, pattern->components_size);
+    return no_wildcard_sequence_match_key_name(name, 0, name->components_size, pattern, 0, pattern->components_size,
+					       subpattern_idxs, num_subpattern_captures, subpattern_name);
   }
 
   int pe = last_index_of_pattern_component_type(pattern, NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)+1;
@@ -153,8 +175,10 @@ int _check_key_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, c
   
   if (nb > ne)
     return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
-  if (no_wildcard_sequence_match_key_name(name, 0, nb, pattern, 0, pb) != 0 ||
-      no_wildcard_sequence_match_key_name(name, ne, name->components_size, pattern, pe, pattern->components_size) != 0)
+  if (no_wildcard_sequence_match_key_name(name, 0, nb, pattern, 0, pb,
+					  subpattern_idxs, num_subpattern_captures, subpattern_name) != 0 ||
+      no_wildcard_sequence_match_key_name(name, ne, name->components_size, pattern, pe, pattern->components_size,
+					  subpattern_idxs, num_subpattern_captures, subpattern_name) != 0)
     return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
 
   for (int i = pb; i < pe; i++) {
@@ -166,7 +190,7 @@ int _check_key_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, c
       return NDN_SUCCESS;
     while (i < pe && pattern->components[i].type != NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE)
       i++;
-    int j = _index_of_key_name(name, nb, ne, pattern, pb, i);
+    int j = _index_of_key_name(name, nb, ne, pattern, pb, i, subpattern_idxs, num_subpattern_captures, subpattern_name);
     if (j == -1) {
       return NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH;
     }
@@ -174,6 +198,7 @@ int _check_key_name_against_pattern(const ndn_trust_schema_pattern_t *pattern, c
     pb = i+1;
   }
   return NDN_SUCCESS;
+  
 }
 
 int
@@ -206,6 +231,7 @@ ndn_trust_schema_verify_data_name_key_name_pair(const ndn_trust_schema_rule_t* r
       printf("\n");
     }
   }
+  printf("\n");
   
   printf("Checking key name pattern.\n\n");
   

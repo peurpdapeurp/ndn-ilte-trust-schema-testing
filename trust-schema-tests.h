@@ -33,7 +33,7 @@ typedef struct {
   const char *key_name_string;
   int key_name_string_size;
   int expected_rule_compilation_result;
-  bool expected_match_result;
+  int expected_match_result;
   bool *passed;
 } trust_schema_test_t;
 

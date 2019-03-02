@@ -20,7 +20,7 @@
 #include "../ndn-lite/encode/name.h"
 #include "ndn-trust-schema-rule.h"
 
-#define TRUST_SCHEMA_NUM_TESTS 13
+#define TRUST_SCHEMA_NUM_TESTS 14
 
 extern char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS];
 
@@ -36,7 +36,7 @@ extern ndn_name_t test_data_name_1;
 extern ndn_name_t test_key_name_1;
 #define test_key_name_1_string "/whatever/apple"
 #define expected_rule_compilation_return_1 (NDN_SUCCESS)
-#define expected_match_1 true
+#define expected_match_1 (NDN_SUCCESS)
 
 extern ndn_trust_schema_rule_t test_rule_2;
 #define test_rule_2_data_pattern_string "<>*<apple>"
@@ -46,7 +46,7 @@ extern ndn_name_t test_data_name_2;
 extern ndn_name_t test_key_name_2;
 #define test_key_name_2_string "/apple"
 #define expected_rule_compilation_return_2 (NDN_SUCCESS)
-#define expected_match_2 false
+#define expected_match_2 (NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH)
 
 extern ndn_trust_schema_rule_t test_rule_3;
 #define test_rule_3_data_pattern_string "<apple><>*"
@@ -56,7 +56,7 @@ extern ndn_name_t test_data_name_3;
 extern ndn_name_t test_key_name_3;
 #define test_key_name_3_string "/apple/banana/test/apple/apple"
 #define expected_rule_compilation_return_3 (NDN_SUCCESS)
-#define expected_match_3 true
+#define expected_match_3 (NDN_SUCCESS)
 
 extern ndn_trust_schema_rule_t test_rule_4;
 #define test_rule_4_data_pattern_string "<apple><>*"
@@ -66,7 +66,7 @@ extern ndn_name_t test_data_name_4;
 extern ndn_name_t test_key_name_4;
 #define test_key_name_4_string "/apple"
 #define expected_rule_compilation_return_4 (NDN_SUCCESS)
-#define expected_match_4 false
+#define expected_match_4 (NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH)
 
 extern ndn_trust_schema_rule_t test_rule_5;
 #define test_rule_5_data_pattern_string "<>*<apple><>*"
@@ -76,7 +76,7 @@ extern ndn_name_t test_data_name_5;
 extern ndn_name_t test_key_name_5;
 #define test_key_name_5_string "/beem/bom/bam/apple/beem/boom/bam/bop"
 #define expected_rule_compilation_return_5 (NDN_SUCCESS)
-#define expected_match_5 true
+#define expected_match_5 (NDN_SUCCESS)
 
 extern ndn_trust_schema_rule_t test_rule_6;
 #define test_rule_6_data_pattern_string "<>*<apple><>*"
@@ -86,7 +86,7 @@ extern ndn_name_t test_data_name_6;
 extern ndn_name_t test_key_name_6;
 #define test_key_name_6_string "/apple"
 #define expected_rule_compilation_return_6 (NDN_SUCCESS)
-#define expected_match_6 false
+#define expected_match_6 (NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH)
 
 extern ndn_trust_schema_rule_t test_rule_7;
 #define test_rule_7_data_pattern_string "<apple><banana>"
@@ -96,7 +96,7 @@ extern ndn_name_t test_data_name_7;
 extern ndn_name_t test_key_name_7;
 #define test_key_name_7_string "/banana/apple/kiwi"
 #define expected_rule_compilation_return_7 (NDN_SUCCESS)
-#define expected_match_7 true
+#define expected_match_7 (NDN_SUCCESS)
 
 extern ndn_trust_schema_rule_t test_rule_8;
 #define test_rule_8_data_pattern_string "<apple><banana>"
@@ -106,7 +106,7 @@ extern ndn_name_t test_data_name_8;
 extern ndn_name_t test_key_name_8;
 #define test_key_name_8_string "/apple"
 #define expected_rule_compilation_return_8 (NDN_SUCCESS)
-#define expected_match_8 false
+#define expected_match_8 (NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH)
 
 extern ndn_trust_schema_rule_t test_rule_9;
 #define test_rule_9_data_pattern_string "<>*"
@@ -116,7 +116,7 @@ extern ndn_name_t test_data_name_9;
 extern ndn_name_t test_key_name_9;
 #define test_key_name_9_string "/anything/goes/whatever"
 #define expected_rule_compilation_return_9 (NDN_SUCCESS)
-#define expected_match_9 true
+#define expected_match_9 (NDN_SUCCESS)
 
 extern ndn_trust_schema_rule_t test_rule_10;
 #define test_rule_10_data_pattern_string "[t.*t]"
@@ -126,7 +126,7 @@ extern ndn_name_t test_data_name_10;
 extern ndn_name_t test_key_name_10;
 #define test_key_name_10_string "/banana_nuggets"
 #define expected_rule_compilation_return_10 (NDN_SUCCESS)
-#define expected_match_10 true
+#define expected_match_10 (NDN_SUCCESS)
 
 extern ndn_trust_schema_rule_t test_rule_11;
 #define test_rule_11_data_pattern_string "[^banana.*]"
@@ -136,7 +136,7 @@ extern ndn_name_t test_data_name_11;
 extern ndn_name_t test_key_name_11;
 #define test_key_name_11_string "/apple"
 #define expected_rule_compilation_return_11 (NDN_SUCCESS)
-#define expected_match_11 false
+#define expected_match_11 (NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH)
 
 extern ndn_trust_schema_rule_t test_rule_12;
 #define test_rule_12_data_pattern_string "<>*<>*<>*"
@@ -146,16 +146,26 @@ extern ndn_name_t test_data_name_12;
 extern ndn_name_t test_key_name_12;
 #define test_key_name_12_string "/apple"
 #define expected_rule_compilation_return_12 (NDN_TRUST_SCHEMA_PATTERN_INVALID_FORMAT)
-#define expected_match_12 false
+#define expected_match_12 (NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH)
 
 extern ndn_trust_schema_rule_t test_rule_13;
 #define test_rule_13_data_pattern_string "(<>)"
-#define test_rule_13_key_pattern_string "<>"
+#define test_rule_13_key_pattern_string "\\0"
 extern ndn_name_t test_data_name_13;
 #define test_data_name_13_string "/apple"
 extern ndn_name_t test_key_name_13;
-#define test_key_name_13_string "/banana"
+#define test_key_name_13_string "/apple"
 #define expected_rule_compilation_return_13 (NDN_SUCCESS)
-#define expected_match_13 true
+#define expected_match_13 (NDN_SUCCESS)
+
+extern ndn_trust_schema_rule_t test_rule_14;
+#define test_rule_14_data_pattern_string "(<>)"
+#define test_rule_14_key_pattern_string "\\0"
+extern ndn_name_t test_data_name_14;
+#define test_data_name_14_string "/apple"
+extern ndn_name_t test_key_name_14;
+#define test_key_name_14_string "/banana"
+#define expected_rule_compilation_return_14 (NDN_SUCCESS)
+#define expected_match_14 (NDN_TRUST_SCHEMA_NAME_DID_NOT_MATCH)
 
 #endif // TRUST_SCHEMA_TESTS_DEF_H
