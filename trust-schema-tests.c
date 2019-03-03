@@ -43,6 +43,9 @@ void _run_trust_schema_test(trust_schema_test_t *test) {
 
   _current_test_name = test->test_names[test->test_name_index];
 
+  if (strcmp(_current_test_name, "test_trust_schema_name_rule_ref_match") != 0)
+    return;
+  
   int ret_val = -1;
 
   printf("Running trust schema test for following parameters:\n");

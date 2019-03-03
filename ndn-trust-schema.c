@@ -216,8 +216,24 @@ ndn_trust_schema_verify_data_name_key_name_pair(const ndn_trust_schema_rule_t* r
     return ret_val;
   }
 
-  ret_val = _check_key_name_against_pattern(&rule->key_pattern, key_name, data_name_subpattern_idxs,
-					    data_name, rule->data_pattern.num_subpattern_captures);
+  if (rule->key_pattern.components[0].type == NDN_TRUST_SCHEMA_RULE_REF) {
+    printf("Got a rule with a rule reference as the key pattern.\n");
+    printf("Rule being referenced: %.*s\n", rule->key_pattern.components[0].size, rule->key_pattern.components[0].value);
+    printf("Subpattern indexes passed into this rule reference: ");
+
+    uint16_t *rule_ref_args_bit_field = (uint16_t *) (rule->key_pattern.components[0].value + NDN_TRUST_SCHEMA_RULE_REF_ARGS_BIT_FIELD_OFFSET);
+    printf("Value of rule ref args bit field: %d\n", *rule_ref_args_bit_field);
+    for (int i = NDN_TRUST_SCHEMA_MAX_SUBPATTERN_MATCHES - 1; i >= 0 ; i--) {
+      if (*rule_ref_args_bit_field >> i & 0x01) {
+	printf("%d, ", (NDN_TRUST_SCHEMA_MAX_SUBPATTERN_MATCHES - 1) - i);
+      }
+    }
+    printf("\n");
+  }
+  else {
+    ret_val = _check_key_name_against_pattern(&rule->key_pattern, key_name, data_name_subpattern_idxs,
+					      data_name, rule->data_pattern.num_subpattern_captures);
+  }
   if (ret_val != NDN_SUCCESS) {
     return ret_val;
   }

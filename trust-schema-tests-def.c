@@ -32,6 +32,7 @@ char *trust_schema_test_names[TRUST_SCHEMA_NUM_TESTS] = {
   "test_trust_schema_pattern_empty_subpattern_mismatch",
   "test_trust_schema_pattern_real_length_exceeds_name_length",
   "test_trust_schema_name_length_exceeds_pattern_real_length",
+  "test_trust_schema_name_rule_ref_match",
 };
 
 bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
@@ -396,5 +397,23 @@ trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS] = {
       expected_rule_compilation_return_19,
       expected_match_19,
       &trust_schema_test_results[19]
+    },
+    {
+      trust_schema_test_names,
+      20,
+      &test_rule_20,
+      test_rule_20_data_pattern_string,
+      strlen(test_rule_20_data_pattern_string),
+      test_rule_20_key_pattern_string,
+      strlen(test_rule_20_key_pattern_string),
+      &test_data_name_20,
+      test_data_name_20_string,
+      strlen(test_data_name_20_string),
+      &test_key_name_20,
+      test_key_name_20_string,
+      strlen(test_key_name_20_string),
+      expected_rule_compilation_return_20,
+      expected_match_20,
+      &trust_schema_test_results[20]
     },
 };
