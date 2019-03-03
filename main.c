@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "trust-schema-tests.h"
+#include "ndn-trust-schema-rule.h"
 
 int main() {
 

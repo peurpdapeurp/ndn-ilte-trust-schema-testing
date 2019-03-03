@@ -220,6 +220,9 @@ ndn_trust_schema_verify_data_name_key_name_pair(const ndn_trust_schema_rule_t* r
     printf("Got a rule with a rule reference as the key pattern.\n");
     printf("Rule being referenced: %s\n", rule->key_pattern.components[0].value);
 
+    // code here to get the rule reference from the hash map
+
+
     
     
   }
