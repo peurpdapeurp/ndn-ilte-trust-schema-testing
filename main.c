@@ -37,7 +37,6 @@ int main() {
   ret_val = ndn_trust_schema_verify_data_name_key_name_pair(&test_rule, &test_data_name, &test_key_name);
 
   ndn_rule_storage_init();
-  printf("%d\n", sizeof(ndn_rule_storage_t));
 
   ret_val = ndn_rule_storage_add_rule("test_rule", &test_rule);
   if (ret_val != 0) {
@@ -51,5 +50,11 @@ int main() {
     return -1;
   }
   
+  ret_val = ndn_rule_storage_remove_rule("test_rule");
+  if (ret_val != 0) {
+    printf("ndn_rule_storage_remove_rule failed, ret_val: %d\n", ret_val);
+    return -1;
+  }
+
 }
 
