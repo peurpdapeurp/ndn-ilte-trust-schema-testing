@@ -37,5 +37,13 @@ int
 ndn_trust_schema_rule_from_strings(ndn_trust_schema_rule_t* rule,
 				     const char* data_name_pattern_string, uint32_t data_name_pattern_string_size,
 				     const char* key_name_pattern_string, uint32_t key_name_pattern_string_size);
+/**
+ * Copy the lhs rule to the rhs rule.
+ * @param lhs. Input. The rule to be inited.
+ * @param rhs. Output. The rule that will be copied to.
+ * @return 0 if there is no error.
+ */
+int
+ndn_trust_schema_rule_copy(const ndn_trust_schema_rule_t *lhs, ndn_trust_schema_rule_t *rhs);
 
 #endif // NDN_TRUST_SCHEMA_RULE_H

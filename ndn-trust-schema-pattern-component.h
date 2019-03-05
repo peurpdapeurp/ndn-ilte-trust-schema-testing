@@ -115,6 +115,15 @@ int
 ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_component_t* component, const char* string, uint32_t size);
 
 /**
+ * Copy lhs pattern component to rhs pattern component.
+ * @param lhs. Input. The pattern component to be copied.
+ * @param rhs. Output. The pattern component to be copied to.
+ * @return 0 if there is no error.
+ */
+int
+ndn_trust_schema_pattern_component_copy(const ndn_trust_schema_pattern_component_t *lhs, ndn_trust_schema_pattern_component_t *rhs);
+
+/**
  * Compare a trust schema pattern component and a name component. This function will return false for any pattern components that
  *   require extra context to be matched properly (i.e., subpattern indexes).
  * @param pattern_component. Input. The pattern component for comparison.

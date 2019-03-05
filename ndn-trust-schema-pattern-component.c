@@ -38,14 +38,16 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
     break;
   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT:
     component->type = type;
+    component->size = 0;
     break;
   case NDN_TRUST_SCHEMA_SUBPATTERN_INDEX:
     component->type = type;
     *component->value = ((int) string[1]) - '0';
-    component->size = 1;
+    component->size = NDN_TRUST_SCHEMA_PATTERN_COMPONENT_BUFFER_SIZE;
     break;
   case NDN_TRUST_SCHEMA_WILDCARD_NAME_COMPONENT_SEQUENCE:
     component->type = type;
+    component->size = 0;
     break;
   case NDN_TRUST_SCHEMA_WILDCARD_SPECIALIZER:
     component->type = type;
@@ -55,7 +57,7 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
   case NDN_TRUST_SCHEMA_RULE_REF: {
 
     if (size > NDN_TRUST_SCHEMA_RULE_NAME_MAX_LENGTH) {
-      return NDN_OVERSIZE;
+      return NDN_TRUST_SCHEMA_RULE_NAME_TOO_LONG;
     }
     
     memcpy(component->value, string, size);
@@ -71,6 +73,19 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
 
   return 0;
   
+}
+
+int
+ndn_trust_schema_pattern_component_copy(const ndn_trust_schema_pattern_component_t *lhs, ndn_trust_schema_pattern_component_t *rhs) {
+
+  rhs->type = lhs->type;
+  if (lhs->size < 0 || lhs->size > NDN_TRUST_SCHEMA_PATTERN_COMPONENT_BUFFER_SIZE)
+    return NDN_TRUST_SCHEMA_PATTERN_COMPONENT_INVALID_SIZE;
+  memcpy(rhs->value, lhs->value, lhs->size);
+  rhs->subpattern_info = lhs->subpattern_info;
+  rhs->size = lhs->size;
+
+  return 0;
 }
 
 int

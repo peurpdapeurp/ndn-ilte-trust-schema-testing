@@ -129,6 +129,23 @@ ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const 
 }
 
 int
+ndn_trust_schema_pattern_copy(const ndn_trust_schema_pattern_t *lhs, ndn_trust_schema_pattern_t *rhs) {
+
+  rhs->components_size = lhs->components_size;
+  rhs->num_subpattern_captures = lhs->num_subpattern_captures;
+  rhs->num_subpattern_indexes = lhs->num_subpattern_indexes;
+  
+  int ret_val = -1;
+  for (int i = 0; i < lhs->components_size; i++) {
+    ret_val = ndn_trust_schema_pattern_component_copy(&lhs->components[i], &rhs->components[i]);
+    if (ret_val != 0) return ret_val;
+  }
+  
+  return 0;
+
+}
+
+int
 index_of_pattern_component_type(const ndn_trust_schema_pattern_t* pattern, int type) {
 
   if (pattern->components_size == 0)

@@ -11,7 +11,7 @@ SOURCES_C := \
 	trust-schema-tests.c \
 	../../riot-branch/ndn-riot-tests/test-helpers.c \
 	../../riot-branch/ndn-riot-tests/print-helpers.c \
-	hashmap.c
+	ndn-trust-schema-rule-storage.c \
 
 default:
 	gcc -o schematized_trust_test main.c $(SOURCES_C)

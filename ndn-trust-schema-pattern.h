@@ -65,6 +65,16 @@ int
 ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const char* string, uint32_t size);
 
 /**
+ * Copy the lhs pattern to the rhs pattern.
+ * @param lhs. Input. The pattern to be copied.
+ * @param rhs. Output. The pattern that will be copied to.
+ * @return 0 if there is no error.
+ */
+int
+ndn_trust_schema_pattern_copy(const ndn_trust_schema_pattern_t *lhs, ndn_trust_schema_pattern_t *rhs);
+
+
+/**
  * Find the first index in a trust schema pattern of a particular type. 
  * @param pattern. Input. The NDN Trust Schema pattern to be parsed.
  * @param type. Input. The pattern component type to search for.
@@ -81,6 +91,5 @@ index_of_pattern_component_type(const ndn_trust_schema_pattern_t* pattern, int t
  */
 int
 last_index_of_pattern_component_type(const ndn_trust_schema_pattern_t* pattern, int type);
-
 
 #endif // NDN_TRUST_SCHEMA_PATTERN_H

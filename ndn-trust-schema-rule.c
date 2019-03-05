@@ -21,3 +21,18 @@ ndn_trust_schema_rule_from_strings(ndn_trust_schema_rule_t* rule,
   return 0;
   
 }
+
+int
+ndn_trust_schema_rule_copy(const ndn_trust_schema_rule_t *lhs, ndn_trust_schema_rule_t *rhs) {
+
+  int ret_val = -1;
+  
+  ret_val = ndn_trust_schema_pattern_copy(&lhs->data_pattern, &rhs->data_pattern);
+  if (ret_val != 0) return ret_val;
+
+  ret_val = ndn_trust_schema_pattern_copy(&lhs->key_pattern, &rhs->key_pattern);
+  if (ret_val != 0) return ret_val;
+  
+  return 0;
+
+}

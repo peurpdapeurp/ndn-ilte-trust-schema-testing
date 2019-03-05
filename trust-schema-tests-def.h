@@ -230,7 +230,7 @@ static ndn_name_t test_key_name_19;
 
 static ndn_trust_schema_rule_t test_rule_20;
 #define test_rule_20_data_pattern_string "(<>*)"
-#define test_rule_20_key_pattern_string "rule_ref(\\0)"
+#define test_rule_20_key_pattern_string "rule_ref"
 static ndn_name_t test_data_name_20;
 #define test_data_name_20_string "/test"
 static ndn_name_t test_key_name_20;
