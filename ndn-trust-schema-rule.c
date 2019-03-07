@@ -12,12 +12,12 @@ ndn_trust_schema_rule_from_strings(ndn_trust_schema_rule_t* rule,
   if (ret_val != 0) {
     return ret_val;
   }
-  
+    
   ret_val = ndn_trust_schema_pattern_from_string(&rule->key_pattern, key_name_pattern_string, key_name_pattern_string_size);
   if (ret_val != 0) {
     return ret_val;
   }
-
+  
   return 0;
   
 }

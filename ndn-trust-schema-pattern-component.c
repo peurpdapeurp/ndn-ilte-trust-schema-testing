@@ -60,10 +60,10 @@ ndn_trust_schema_pattern_component_from_string(ndn_trust_schema_pattern_componen
       return NDN_TRUST_SCHEMA_RULE_NAME_TOO_LONG;
     }
     
-    memcpy(component->value, string, size);
-    component->value[size] = '\0';
+    memcpy(component->value, string, size-2);
+    component->value[size-2] = '\0';
     component->type = type;
-    component->size = size;
+    component->size = size-2;
     
     break;
   }

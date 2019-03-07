@@ -28,6 +28,22 @@ extern bool trust_schema_test_results[TRUST_SCHEMA_NUM_TESTS];
 
 extern trust_schema_test_t trust_schema_tests[TRUST_SCHEMA_NUM_TESTS];
 
+static ndn_trust_schema_rule_t article_rule;
+#define article_rule_data_pattern_string "(<>*)<article>"
+#define article_rule_key_pattern_string "\\0<author>"
+
+static ndn_trust_schema_rule_t author_rule;
+#define author_rule_data_pattern_string "(<>*)<author>"
+#define author_rule_key_pattern_string "\\0<admin>"
+
+static ndn_trust_schema_rule_t admin_rule;
+#define admin_rule_data_pattern_string "(<>*)<admin>"
+#define admin_rule_key_pattern_string "\\0<blog>"
+
+static ndn_trust_schema_rule_t root_rule;
+#define root_rule_data_pattern_string "(<>*)<blog>"
+#define root_rule_key_pattern_string "<root>"
+
 static ndn_trust_schema_rule_t test_rule_0;
 #define test_rule_0_data_pattern_string "<>*<apple>"
 #define test_rule_0_key_pattern_string "<>*<apple>"
@@ -230,7 +246,7 @@ static ndn_name_t test_key_name_19;
 
 static ndn_trust_schema_rule_t test_rule_20;
 #define test_rule_20_data_pattern_string "(<>*)"
-#define test_rule_20_key_pattern_string "rule_ref"
+#define test_rule_20_key_pattern_string "root_rule()"
 static ndn_name_t test_data_name_20;
 #define test_data_name_20_string "/test"
 static ndn_name_t test_key_name_20;

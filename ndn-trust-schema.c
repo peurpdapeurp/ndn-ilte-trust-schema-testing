@@ -4,6 +4,8 @@
 #include "../ndn-lite/ndn-error-code.h"
 #include "../ndn-lite/ndn-constants.h"
 
+#include "ndn-rule-storage.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -217,13 +219,21 @@ ndn_trust_schema_verify_data_name_key_name_pair(const ndn_trust_schema_rule_t* r
   }
 
   if (rule->key_pattern.components[0].type == NDN_TRUST_SCHEMA_RULE_REF) {
-    printf("Got a rule with a rule reference as the key pattern.\n");
-    printf("Rule being referenced: %s\n", rule->key_pattern.components[0].value);
+    const char *rule_name = rule->key_pattern.components[0].value;
 
-    // code here to get the rule reference from the hash map
+    const ndn_trust_schema_rule_t *rule_ref;
+    rule_ref = ndn_rule_storage_get_rule(rule_name);
+    if (rule_ref == NULL)
+      return NDN_TRUST_SCHEMA_RULE_REF_NOT_FOUND;
 
-
+    printf("Number of subpattern captures in current rule: %d\n", rule->data_pattern.num_subpattern_captures);
+    printf("Number of subpattern captures in referenced rule: %d\n", rule_ref->data_pattern.num_subpattern_captures);
     
+    if (rule_ref->data_pattern.num_subpattern_captures != rule->data_pattern.num_subpattern_captures)
+      return NDN_TRUST_SCHEMA_RULE_REF_UNEQUAL_NUM_OF_SUBPATTERN_CAPTURES;
+    
+    ret_val = _check_key_name_against_pattern(&rule_ref->key_pattern, key_name, data_name_subpattern_idxs,
+					      data_name, rule->data_pattern.num_subpattern_captures);
     
   }
   else {

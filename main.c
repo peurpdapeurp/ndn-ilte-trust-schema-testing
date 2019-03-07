@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "trust-schema-tests.h"
-#include "ndn-trust-schema-rule-storage.h"
+#include "ndn-rule-storage.h"
 #include "ndn-trust-schema-rule.h"
 
 static ndn_trust_schema_rule_t test_rule;
@@ -44,7 +44,7 @@ int main() {
     return -1;
   }
 
-  ret_val = ndn_rule_storage_get_rule("test_rule", &test_rule_empty);
+  ret_val = ndn_rule_storage_get_rule("test_rule");
   if (ret_val != 0) {
     printf("ndn_rule_storage_get_rule failed, ret_val: %d\n", ret_val);
     return -1;

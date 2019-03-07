@@ -22,6 +22,7 @@
 #include "../ndn-lite/ndn-error-code.h"
 #include "ndn-trust-schema.h"
 #include "ndn-trust-schema-pattern-component.h"
+#include "ndn-rule-storage.h"
 
 #include "tiny-regex-c/re.h"
 
@@ -29,7 +30,78 @@ static const char *_current_test_name;
 
 void _run_trust_schema_test(trust_schema_test_t *test);
 
+bool init_trust_schema_tests() {
+
+  int ret_val = -1;
+
+  printf("ndn_rule_storage_init() was called.\n");
+  ndn_rule_storage_init();
+
+  ret_val = ndn_trust_schema_rule_from_strings(&article_rule,
+  					       article_rule_data_pattern_string, strlen(article_rule_data_pattern_string),
+  					       article_rule_key_pattern_string, strlen(article_rule_key_pattern_string));
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_trust_schema_rule_from_strings failed, return code: %d\n", ret_val);
+    return false;
+  }
+  
+  ret_val = ndn_trust_schema_rule_from_strings(&author_rule,
+  					       author_rule_data_pattern_string, strlen(author_rule_data_pattern_string),
+  					       author_rule_key_pattern_string, strlen(author_rule_key_pattern_string));
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_trust_schema_rule_from_strings failed, return code: %d\n", ret_val);
+    return false;
+  }
+
+  ret_val = ndn_trust_schema_rule_from_strings(&admin_rule,
+  					       admin_rule_data_pattern_string, strlen(admin_rule_data_pattern_string),
+  					       admin_rule_key_pattern_string, strlen(admin_rule_key_pattern_string));
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_trust_schema_rule_from_strings failed, return code: %d\n", ret_val);
+    return false;
+  }
+
+  ret_val = ndn_trust_schema_rule_from_strings(&root_rule,
+  					       root_rule_data_pattern_string, strlen(root_rule_data_pattern_string),
+  					       root_rule_key_pattern_string, strlen(root_rule_key_pattern_string));
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_trust_schema_rule_from_strings failed, return code: %d\n", ret_val);
+    return false;
+  }
+
+  ret_val = ndn_rule_storage_add_rule("article_rule", &article_rule);
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_storage_add_rule failed, return code: %d\n", ret_val);
+    return false;    
+  }
+
+  ret_val = ndn_rule_storage_add_rule("author_rule", &author_rule);
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_storage_add_rule failed, return code: %d\n", ret_val);
+    return false;    
+  }
+
+  ret_val = ndn_rule_storage_add_rule("admin_rule", &admin_rule);
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_storage_add_rule failed, return code: %d\n", ret_val);
+    return false;    
+  }
+
+  ret_val = ndn_rule_storage_add_rule("root_rule", &root_rule);
+  if (ret_val != NDN_SUCCESS) {
+    printf("In init_trust_schema_tests, ndn_storage_add_rule failed, return code: %d\n", ret_val);
+    return false;    
+  }
+ 
+  return true;
+  
+}
+
 bool run_trust_schema_tests(void) {
+
+  if (!init_trust_schema_tests())
+    return false;
+  
   memset(trust_schema_test_results, 0, sizeof(bool)*TRUST_SCHEMA_NUM_TESTS);
   for (int i = 0; i < TRUST_SCHEMA_NUM_TESTS; i++) {
     _run_trust_schema_test(&trust_schema_tests[i]);

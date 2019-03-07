@@ -2,12 +2,21 @@
 #include "ndn-trust-schema-pattern.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 int
 ndn_trust_schema_pattern_from_string(ndn_trust_schema_pattern_t* pattern, const char* string, uint32_t size) {
 
   if (string[size-1] == '\0')
     size--;
+
+  if (size == -1)
+    return NDN_TRUST_SCHEMA_PATTERN_STRING_ZERO_LENGTH;
+  
+  for (int i = 0; i < size-1; i++) {
+    if (string[i] == '\0')
+      return NDN_TRUST_SCHEMA_PATTERN_STRING_PREMATURE_TERMINATION;
+  }
   
   int ret_val = -1;
   
